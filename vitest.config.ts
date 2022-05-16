@@ -8,6 +8,9 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
-    exclude: configDefaults.exclude.concat('e2e'),
+    exclude: configDefaults.exclude.concat(['e2e/*']),
+    coverage: {
+      exclude: ['.pnp.*'],
+    },
   },
 })

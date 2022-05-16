@@ -24,6 +24,13 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="flex flex-col flex-wrap min-h-screen place-content-center place-items-center">
+        <button
+          type="button"
+          onClick={() => load('0!1!0!0!0!0!0!0!0!0')}
+          className="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 rounded-full text-xs py-2 m-2.5 px-2.5 top-0 right-0 absolute"
+        >
+          reset
+        </button>
         <MenuBar />
         <Board />
 

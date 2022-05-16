@@ -26,23 +26,19 @@ export type GameStore = {
   cells(): number[]
   victoryPattern(moves: number): number
   gameStatus(p1Moves: number, p2Moves: number): GameStatus
-  togglePvC(): void
+  setPlayMode(playMode: PlayMode): void
   move(position: number): void
   aiMove(): void
-  load(): void
+  load(data?: string): void
   // debug(pMoves: number, p2Moves: number): string
-}
-
-const defaultState = {
-  playerNo: 1,
-  p1Moves: 0b0,
-  p2Moves: 0b0,
 }
 
 export const useGameStore = create(
   subscribeWithSelector<GameStore>((set, get) => ({
     playMode: PlayMode.Mode1P,
-    ...defaultState,
+    playerNo: 1,
+    p1Moves: 0b0,
+    p2Moves: 0b0,
     pvcRecords: [0, 0, 0],
     pvpRecords: [0, 0, 0],
     cells: () =>
@@ -65,20 +61,30 @@ export const useGameStore = create(
       }
       return GameStatus.InProgress
     },
-    togglePvC: () =>
-      set(({ playMode }) => ({
-        ...defaultState,
-        playMode:
-          playMode === PlayMode.Mode1P ? PlayMode.Mode2P : PlayMode.Mode1P,
-      })),
+    setPlayMode: (playMode) =>
+      set({
+        playerNo: 1,
+        p1Moves: 0b0,
+        p2Moves: 0b0,
+        playMode,
+      }),
     move: (position) =>
       set(
         ({ playMode, playerNo, p1Moves, p2Moves, pvcRecords, pvpRecords }) => {
           if (get().gameStatus(p1Moves!, p2Moves!) !== GameStatus.InProgress) {
             // game ended, reset for next game
-            return defaultState
-          } else if (position & p1Moves || position & p2Moves) {
-            // ignore if cell is occupied
+            return {
+              playerNo: 1,
+              p1Moves: 0b0,
+              p2Moves: 0b0,
+            }
+          } else if (
+            position & p1Moves ||
+            position & p2Moves ||
+            !(position & TIE_PATTERN) ||
+            position & ~TIE_PATTERN
+          ) {
+            // ignore if cell is occupied or invalid move
             return {}
           } else {
             // move and opponent turn
@@ -151,39 +157,39 @@ export const useGameStore = create(
         }
       }
     },
-    load: () =>
+    load: (data) =>
       set(() => {
         const parseData = (data: string | null) => {
-          try {
-            const params = data?.split('!').map((l) => parseInt(l))
-            if (params?.length === 10) {
-              const [
-                playMode,
-                playerNo,
-                p1Moves,
-                p2Moves,
-                p1VictoryPvC,
-                p2VictoryPvC,
-                tiePvC,
-                p1VictoryPvP,
-                p2VictoryPvP,
-                tiePvP,
-              ] = params
-              return {
-                playMode,
-                playerNo,
-                p1Moves,
-                p2Moves,
-                pvcRecords: [p1VictoryPvC, p2VictoryPvC, tiePvC],
-                pvpRecords: [p1VictoryPvP, p2VictoryPvP, tiePvP],
-              }
+          const params = data
+            ?.split('_')
+            .map((l) => parseInt(l))
+            .filter((l) => !isNaN(l))
+          if (params?.length === 10) {
+            const [
+              playMode,
+              playerNo,
+              p1Moves,
+              p2Moves,
+              p1VictoryPvC,
+              p2VictoryPvC,
+              tiePvC,
+              p1VictoryPvP,
+              p2VictoryPvP,
+              tiePvP,
+            ] = params
+            return {
+              playMode,
+              playerNo,
+              p1Moves,
+              p2Moves,
+              pvcRecords: [p1VictoryPvC, p2VictoryPvC, tiePvC],
+              pvpRecords: [p1VictoryPvP, p2VictoryPvP, tiePvP],
             }
-            return null
-          } catch (error) {
-            console.error(error)
           }
+          return null
         }
         return (
+          parseData(data ?? null) ??
           parseData(
             new URLSearchParams(location.hash.replace(/^#/, '')).get('s')
           ) ??
@@ -218,7 +224,7 @@ useGameStore.subscribe((state) => {
     state.p2Moves,
     ...state.pvcRecords,
     ...state.pvpRecords,
-  ].join('!')
+  ].join('_')
   localStorage.setItem('gameState', data)
   const params = new URLSearchParams(location.hash.replace(/^#/, ''))
   params.set('s', data)

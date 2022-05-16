@@ -4,14 +4,11 @@ import { GameStore, PlayMode, useGameStore } from '../hooks/useGameStore'
 
 const selector = (state: GameStore) => ({
   playMode: state.playMode,
-  p1Moves: state.p1Moves,
-  p2Moves: state.p2Moves,
-  gameStatus: state.gameStatus,
-  togglePvC: state.togglePvC,
+  setPlayMode: state.setPlayMode,
 })
 
 export const MenuBar: FC = () => {
-  const { playMode, togglePvC } = useGameStore(selector)
+  const { playMode, setPlayMode } = useGameStore(selector)
   return (
     <div
       className="inline-flex rounded-md w-72 sm:w-96 shadow-sm mb-5"
@@ -27,7 +24,7 @@ export const MenuBar: FC = () => {
             'text-white bg-blue-700': playMode === PlayMode.Mode1P,
           }
         )}
-        onClick={() => playMode !== PlayMode.Mode1P && togglePvC()}
+        onClick={() => setPlayMode(PlayMode.Mode1P)}
       >
         <svg
           className="mr-2 w-4 h-4 fill-current inline"
@@ -55,7 +52,7 @@ export const MenuBar: FC = () => {
             'text-white bg-blue-700': playMode === PlayMode.Mode2P,
           }
         )}
-        onClick={() => playMode !== PlayMode.Mode2P && togglePvC()}
+        onClick={() => setPlayMode(PlayMode.Mode2P)}
       >
         <svg
           className="mr-2 w-4 h-4 fill-current inline"
