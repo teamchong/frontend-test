@@ -41,7 +41,7 @@ export const GamePanel: FC = () => {
         style={{ textShadow: '1px 1px #ccc' }}
       >
         {status !== GameStatus.InProgress && (
-          <>( continue any cell to continue )</>
+          <>( click any cell to continue )</>
         )}
       </div>
       <div

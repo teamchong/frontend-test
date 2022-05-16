@@ -157,7 +157,7 @@ export const useGameStore = create(
         }
       }
     },
-    load: (data) =>
+    load: (setting) =>
       set(() => {
         const parseData = (data: string | null) => {
           const params = data
@@ -189,7 +189,7 @@ export const useGameStore = create(
           return null
         }
         return (
-          parseData(data ?? null) ??
+          parseData(setting ?? null) ??
           parseData(
             new URLSearchParams(location.hash.replace(/^#/, '')).get('s')
           ) ??
