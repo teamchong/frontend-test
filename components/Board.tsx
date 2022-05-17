@@ -33,7 +33,10 @@ export const Board: FC = () => {
   const blink = { blink: gameStatus(p1Moves, p2Moves) === GameStatus.Tie }
 
   return (
-    <div className="relative flex flex-wrap w-72 h-72 sm:w-96 sm:h-96">
+    <div
+      id="board"
+      className="relative flex flex-wrap w-72 h-72 sm:w-96 sm:h-96"
+    >
       <div
         className={classNames(
           'absolute w-72 sm:w-96 border-8 border-black rounded-full',

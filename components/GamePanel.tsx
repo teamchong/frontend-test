@@ -36,7 +36,7 @@ export const GamePanel: FC = () => {
   const p2Name = playMode === PlayMode.ModePvC ? 'Computer' : 'Player 2'
 
   return (
-    <div className="relative flex text-xs sm:text-sm justify-center w-72 sm:w-96 pt-8">
+    <footer className="relative flex text-xs sm:text-sm justify-center w-72 sm:w-96 pt-8">
       <div
         className="absolute top-0 w-72 sm:w-96 text-center text-nowrap text-blue-700"
         style={{ textShadow: '1px 1px #ccc' }}
@@ -81,6 +81,6 @@ export const GamePanel: FC = () => {
         <br />
         {p2Victory}
       </div>
-    </div>
+    </footer>
   )
 }

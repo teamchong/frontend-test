@@ -10,7 +10,7 @@ const selector = (state: GameStore) => ({
 export const MenuBar: FC = () => {
   const { playMode, setPlayMode } = useGameStore(selector)
   return (
-    <div
+    <nav
       className="inline-flex rounded-md w-72 sm:w-96 shadow-sm mb-5"
       role="group"
     >
@@ -98,6 +98,6 @@ export const MenuBar: FC = () => {
         </svg>
         CvP
       </button>
-    </div>
+    </nav>
   )
 }
