@@ -7,6 +7,7 @@ export function useRoom(init?: string): string {
   const [room, setRoom] = useState('')
   const version = useRef(0)
   useEffect(() => {
+    // retrieve latest state from server, override if version is the same or higher
     async function polling() {
       try {
         if (room && useGameStore.getState().playMode !== PlayMode.ModePvC) {
@@ -31,8 +32,9 @@ export function useRoom(init?: string): string {
       } catch (error) {
         console.error(error)
       }
-      setTimeout(() => polling(), 500)
+      setTimeout(() => polling(), 100)
     }
+    // subscibe to local state change, and push state to server
     useGameStore.subscribe((state, prevState) => {
       if (state.playMode !== prevState.playMode) {
         version.current = 0
@@ -47,6 +49,7 @@ export function useRoom(init?: string): string {
         )
       }
     })
+    // create a new room and initialize state
     async function loadNewRoom() {
       try {
         const newRoom = await (
@@ -71,6 +74,8 @@ export function useRoom(init?: string): string {
       }
       setTimeout(polling, 0)
     }
+
+    // initialization, run once
     const room =
       init ?? new URLSearchParams(location.hash.replace(/^#/, '')).get('r')
     if (room) {
