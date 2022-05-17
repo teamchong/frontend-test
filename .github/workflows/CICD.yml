@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   CI:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3
@@ -42,10 +42,8 @@ jobs:
         uses: actions/cache@v3
         id: playwright-cache
         with:
-          path: |
-            ~/Library/Caches/ms-playwright
-            **/node_modules/playwright
-          key: cache-playwright-macos
+          path: ~/.cache/ms-playwright
+          key: cache-playwright-${{ runner.os }}
       - name: Install playwright deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
