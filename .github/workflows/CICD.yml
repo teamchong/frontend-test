@@ -14,11 +14,11 @@ jobs:
         with:
           node-version: 16
           cache: 'yarn'
-          cache-dependency-path: ./yarn/cache
+          cache-dependency-path: yarn.lock
       - name: Install project deps
         run: |
           yarn set version berry
-          yarn install --immutable --immutable-cache
+          yarn install --immutable
 
       - name: Cache NextJS
         uses: actions/cache@v3
