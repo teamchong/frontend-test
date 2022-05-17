@@ -37,7 +37,16 @@ jobs:
 
       - name: Unit Testing & Coverage
         run: yarn coverage
-      - name: Install Playwright
+
+      - name: Cache playwright binaries
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: ~/Library/Caches/ms-playwright
+          key: vivid-cache-playwright
+
+      - name: Install playwright deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: yarn dlx playwright install --with-deps
       - name: e2e Testing
         run: yarn test:e2e
@@ -47,6 +56,7 @@ jobs:
         with:
           name: playwright-report
           path: test-results
+
       - name: Release to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
