@@ -13,31 +13,31 @@ test('play some games', async ({ page }) => {
     /\bbg-blue-700\b/
   )
   await expect(page.locator('button.text-7xl >> nth=0')).toHaveClass(
-    /\btext-green-700\b/
+    /\btext-red-700\b/
   )
   await expect(page.locator('button.text-7xl >> nth=1')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=2')).toHaveClass(
-    /\btext-red-700\b/
+    /\btext-green-700\b/
   )
   await expect(page.locator('button.text-7xl >> nth=3')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=4')).toHaveClass(
-    /\btext-green-700\b/
+    /\btext-red-700\b/
   )
   await expect(page.locator('button.text-7xl >> nth=5')).toHaveClass(
-    /\btext-red-700\b/
-  )
-  await expect(page.locator('button.text-7xl >> nth=6')).toHaveClass(
     /\btext-green-700\b/
   )
+  await expect(page.locator('button.text-7xl >> nth=6')).toHaveClass(
+    /\btext-red-700\b/
+  )
   await expect(page.locator('button.text-7xl >> nth=7')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=8')).toHaveClass(
-    /\btext-red-700\b/
+    /\btext-green-700\b/
   )
   await expect(
     page.locator('div:has-text("click any cell to continue") >> nth--1')
@@ -56,31 +56,31 @@ test('play some games', async ({ page }) => {
   await page.locator('button:has-text("PvC") >> nth=-1').click()
 
   await expect(page.locator('button.text-7xl >> nth=0')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=1')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=2')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=3')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=4')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=5')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=6')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=7')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=8')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
 
   await expect(
@@ -97,31 +97,31 @@ test('play some games', async ({ page }) => {
   await page.locator('button:has-text("reset") >> nth=-1').click()
 
   await expect(page.locator('button.text-7xl >> nth=0')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=1')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=2')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=3')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=4')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=5')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=6')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=7')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
   await expect(page.locator('button.text-7xl >> nth=8')).not.toHaveClass(
-    /\b(?:text-green-700|text-red-700)\b/
+    /\b(?:text-red-700|text-green-700)\b/
   )
 
   await expect(
