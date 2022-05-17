@@ -19,6 +19,13 @@ This repository contains web based interactive Tic-Tac-Toe game.
 4. A track of player scores is maintained
 5. Click any grid to play again
 
+## PvP
+
+1. Select PvP mode
+2. Player X starts the game
+3. Player X shared the url in location bar to Player O
+4. Player O open the url and start playing
+
 ## Tech Stack
 
 | Feature          | Library Used                | Also Considered    |
