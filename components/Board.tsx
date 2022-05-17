@@ -35,7 +35,7 @@ export const Board: FC = () => {
   return (
     <div
       id="board"
-      className="relative flex flex-wrap w-72 h-72 sm:w-96 sm:h-96"
+      className="relative flex flex-wrap w-72 h-72 sm:w-96 sm:h-96 justify-center"
     >
       <div
         className={classNames(

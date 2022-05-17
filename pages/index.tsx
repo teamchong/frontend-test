@@ -7,6 +7,7 @@ import { GamePanel } from '../components/GamePanel'
 import { MenuBar } from '../components/MenuBar'
 import { GameStore, useGameStore } from '../hooks/useGameStore'
 import { useEffect } from 'react'
+import { useRoom } from '../hooks/useRoom'
 
 const selector = (state: GameStore) => ({
   load: state.load,
@@ -15,6 +16,7 @@ const selector = (state: GameStore) => ({
 const Home: NextPage = () => {
   const { load } = useGameStore(selector)
   useEffect(() => load(), [load])
+  useRoom()
   return (
     <div className={styles.container}>
       <Head>

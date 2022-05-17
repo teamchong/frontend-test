@@ -30,6 +30,7 @@ export type GameStore = {
   setPlayMode(playMode: PlayMode): void
   move(position: number): void
   aiMove(): void
+  state(): string
   load(data?: string): void
   // debug(pMoves: number, p2Moves: number): string
 }
@@ -42,6 +43,7 @@ export const useGameStore = create(
     p2Moves: 0b0,
     pvcRecords: [0, 0, 0],
     pvpRecords: [0, 0, 0],
+    room: '',
     cells: () =>
       Array(9)
         .fill(0)
@@ -164,6 +166,15 @@ export const useGameStore = create(
         }
       }
     },
+    state: () =>
+      [
+        get().playMode,
+        get().playerNo,
+        get().p1Moves,
+        get().p2Moves,
+        ...get().pvcRecords,
+        ...get().pvpRecords,
+      ].join('_'),
     load: (setting) =>
       set(() => {
         const parseData = (data: string | null) => {
@@ -224,14 +235,7 @@ export const useGameStore = create(
 )
 
 useGameStore.subscribe((state) => {
-  const data = [
-    state.playMode,
-    state.playerNo,
-    state.p1Moves,
-    state.p2Moves,
-    ...state.pvcRecords,
-    ...state.pvpRecords,
-  ].join('_')
+  const data = state.state()
   localStorage.setItem('gameState', data)
   const params = new URLSearchParams(location.hash.replace(/^#/, ''))
   params.set('s', data)

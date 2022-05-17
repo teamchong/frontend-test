@@ -272,42 +272,62 @@ describe('pvpRecords', () => {
 
 describe('aiMove', () => {
   const { result } = renderHook(() => useGameStore())
-  test('aiMove first', () => {
+  test('aiMove move second on PvC', () => {
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
     act(() => result.current.aiMove()) // 1P
     expect(result.current.p1Moves).toBe(0b000000000)
   })
+  test('aiMove move first on CvP', () => {
+    act(() => useGameStore.setState({ playMode: PlayMode.ModeCvP }))
+    act(() => result.current.aiMove()) // 1P
+    expect(result.current.p1Moves).not.toBe(0b000000000)
+  })
   test('aiMove after 1P', () => {
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
     act(() => result.current.move(0b100000000)) // 1P
     act(() => result.current.aiMove()) // 2P
     expect(result.current.p1Moves).toBe(0b100000000)
     expect(result.current.p2Moves).not.toBe(0b000000000)
   })
   test('aiMove almost win', () => {
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvP }))
     for (let i = 0; i < p2VictoryPatterns.length - 1; i++) {
       act(() => result.current.move(p2VictoryPatterns[i]))
     }
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
     act(() => result.current.aiMove()) // 2P
     expect(
       result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
     ).toBe(GameStatus.P2Victory)
   })
   test('aiMove prevent loss', () => {
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvP }))
     for (let i = 0; i < p1VictoryPatterns.length - 2; i++) {
       act(() => result.current.move(p1VictoryPatterns[i]))
     }
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
     act(() => result.current.aiMove()) // 2P
     expect(
       result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
     ).not.toBe(GameStatus.P1Victory)
   })
   test('game ended, let user click for next game', () => {
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvP }))
     for (let i = 0; i < tiePatterns.length; i++) {
       act(() => result.current.move(tiePatterns[i]))
     }
-    const lastMove = result.current.p2Moves
+    act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
+    const lastP2Move = result.current.p2Moves
     act(() => result.current.aiMove()) // 2P
-    expect(result.current.p2Moves).toBe(lastMove)
+    expect(result.current.p2Moves).toBe(lastP2Move)
     expect(result.current.playerNo).toBe(0)
+    act(() =>
+      useGameStore.setState({ playMode: PlayMode.ModeCvP, playerNo: 0 })
+    )
+    const lastP1Move = result.current.p1Moves
+    act(() => result.current.aiMove()) // 1P
+    expect(result.current.p1Moves).toBe(lastP1Move)
+    expect(result.current.playerNo).toBe(1)
   })
 })
 

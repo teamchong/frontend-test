@@ -11,7 +11,7 @@ export const MenuBar: FC = () => {
   const { playMode, setPlayMode } = useGameStore(selector)
   return (
     <nav
-      className="inline-flex rounded-md w-72 sm:w-96 shadow-sm mb-5"
+      className="inline-flex rounded-md w-72 sm:w-96 shadow-sm mb-5 justify-center"
       role="group"
     >
       <button
