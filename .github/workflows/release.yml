@@ -42,7 +42,7 @@ jobs:
       - name: Unit testing & check code coverage
         run: |
           yarn coverage
-          echo "repo-token: $COVERALLS_REPO_TOKEN" > .coveralls.yml
+          echo "repo-token: $COVERALLS_REPO_TOKEN" > ${{ github.workspace }}/coveralls.yml
           cat coverage/lcov.info | yarn coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -67,11 +67,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: playwright-report
-          path: test-results
+          path: ${{ github.workspace }}/test-results/**/*
 
       - name: Release to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./out
+          publish_dir: ${{ github.workspace }}/out
