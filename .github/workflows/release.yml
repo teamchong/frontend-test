@@ -40,7 +40,13 @@ jobs:
           NEXT_BASE_PATH=/$(basename ${{ github.repository }}) yarn build
 
       - name: Unit testing & check code coverage
-        run: yarn coverage
+        run: |
+          yarn coverage
+          make test-coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache playwright binaries
         uses: actions/cache@v3
