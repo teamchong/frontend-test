@@ -20,7 +20,8 @@ jobs:
           yarn set version berry
           yarn install --immutable --immutable-cache
 
-      - uses: actions/cache@v3
+      - name: Cache NextJS
+        uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/.next/cache
@@ -30,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('yarn.lock') }}-
 
-      - name: Build
+      - name: Build NextJS
         run: |
           yarn next telemetry disable > /dev/null
           yarn build
@@ -42,7 +43,9 @@ jobs:
         uses: actions/cache@v3
         id: playwright-cache
         with:
-          path: ~/.cache/ms-playwright
+          path: |
+            ~/.cache/ms-playwright
+            **/node_modules/playwright
           key: cache-playwright-${{ runner.os }}
       - name: Install playwright deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
