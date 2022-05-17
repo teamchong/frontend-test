@@ -34,7 +34,7 @@ jobs:
       - name: Build NextJS
         run: |
           yarn next telemetry disable > /dev/null
-          NEXT_BASE_PATH=$(basename ${{ github.repository }}) yarn build
+          NEXT_BASE_PATH=/$(basename ${{ github.repository }}) yarn build
 
       - name: Unit testing & check code coverage
         run: yarn coverage
