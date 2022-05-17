@@ -43,13 +43,11 @@ jobs:
         uses: actions/cache@v3
         id: playwright-cache
         with:
-          path: |
-            ~/.cache/ms-playwright
-            **/node_modules/playwright
+          path: ~/.cache/ms-playwright
           key: cache-playwright-${{ runner.os }}
       - name: Install playwright deps
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+        if: always()
       - name: e2e Testing
         run: yarn test:e2e
       - name: Upload test results
