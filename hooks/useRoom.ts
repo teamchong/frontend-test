@@ -33,7 +33,10 @@ export function useRoom(init?: string): string {
       }
       setTimeout(() => polling(), 500)
     }
-    useGameStore.subscribe((state) => {
+    useGameStore.subscribe((state, prevState) => {
+      if (state.playMode !== prevState.playMode) {
+        version.current = 0
+      }
       if (room && state.playMode === PlayMode.ModePvP) {
         version.current++
         return fetch(
