@@ -14,10 +14,10 @@ jobs:
           node-version: 16
           cache: 'yarn'
           cache-dependency-path: 'yarn.lock'
-      - name: Test Build
+      - name: Build
         run: |
           yarn set version from sources
-          yarn install --immutable
+          yarn install --immutable --verbose
           yarn build
       - name: Unit Testing & Coverage
         run: yarn coverage
