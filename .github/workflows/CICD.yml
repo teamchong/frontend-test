@@ -46,9 +46,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: cache-playwright-${{ runner.os }}
       - name: Install playwright deps
-        run: |
-          yarn playwright install-deps --dry-run
-          yarn playwright install-deps
+        run: yarn playwright install-deps
         if: always()
       - name: e2e Testing
         run: yarn test:e2e
