@@ -3,8 +3,8 @@ name: Release to GitHub Pages
 on: [push, pull_request]
 
 jobs:
-  CI:
-    name: Build
+  CICD:
+    name: Release to GitHub Pages
     runs-on: ubuntu-20.04
 
     steps:
