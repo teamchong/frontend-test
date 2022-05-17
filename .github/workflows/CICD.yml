@@ -33,6 +33,7 @@ jobs:
 
       - name: Build NextJS
         run: |
+          NEXT_BASE_PATH=$(basename ${{ github.repository }})
           yarn next telemetry disable > /dev/null
           yarn build
 
