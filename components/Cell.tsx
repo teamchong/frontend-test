@@ -31,13 +31,13 @@ export const Cell: FC<CellProps> = ({ position }) => {
       onClick={handleClick}
       className={classNames('text-7xl sm:text-9xl w-1/3 h-1/3', {
         blink: victory & position,
-        'text-green-700': p1Moves & position,
-        'text-red-700': p2Moves & position,
+        'text-red-700': p1Moves & position,
+        'text-green-700': p2Moves & position,
         'opacity-10': victory !== 0 && !(victory & position),
       })}
-      disabled={playMode === PlayMode.Mode1P && playerNo !== 1}
+      disabled={playMode === PlayMode.ModePvC && playerNo !== 0}
     >
-      {p1Moves & position ? 'O' : p2Moves & position ? 'X' : ''}
+      {p1Moves & position ? 'X' : p2Moves & position ? 'O' : ''}
     </button>
   )
 }

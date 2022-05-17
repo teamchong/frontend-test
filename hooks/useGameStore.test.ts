@@ -34,8 +34,8 @@ const tiePatterns = [
 beforeEach(() => {
   act(() =>
     useGameStore.setState({
-      playMode: PlayMode.Mode1P,
-      playerNo: 1,
+      playMode: PlayMode.ModePvC,
+      playerNo: 0,
       p1Moves: 0b0,
       p2Moves: 0b0,
       pvcRecords: [0, 0, 0],
@@ -71,24 +71,24 @@ describe('victoryPattern', () => {
 
 describe('playMode', () => {
   const { result } = renderHook(() => useGameStore())
-  test('new game playMode is Mode1P', () => {
-    expect(result.current.playMode).toBe(PlayMode.Mode1P)
+  test('new game playMode is ModePvC', () => {
+    expect(result.current.playMode).toBe(PlayMode.ModePvC)
   })
-  test('setPlayMode should change playMode from Mode1P to Mode2P', () => {
-    act(() => result.current.setPlayMode(PlayMode.Mode2P))
-    expect(result.current.playMode).toBe(PlayMode.Mode2P)
+  test('setPlayMode should change playMode from ModePvC to ModePvP', () => {
+    act(() => result.current.setPlayMode(PlayMode.ModePvP))
+    expect(result.current.playMode).toBe(PlayMode.ModePvP)
   })
-  test('setPlayMode should change playMode from Mode2P to Mode1P', () => {
-    act(() => result.current.setPlayMode(PlayMode.Mode2P))
-    act(() => result.current.setPlayMode(PlayMode.Mode1P))
-    expect(result.current.playMode).toBe(PlayMode.Mode1P)
+  test('setPlayMode should change playMode from ModePvP to ModePvC', () => {
+    act(() => result.current.setPlayMode(PlayMode.ModePvP))
+    act(() => result.current.setPlayMode(PlayMode.ModePvC))
+    expect(result.current.playMode).toBe(PlayMode.ModePvC)
   })
 })
 
 describe('playerNo', () => {
   const { result } = renderHook(() => useGameStore())
-  test('new game playerNo is 1', () => {
-    expect(result.current.playerNo).toBe(1)
+  test('new game playerNo is 0', () => {
+    expect(result.current.playerNo).toBe(0)
   })
   const positions = [
     0b100000000, // 1P
@@ -102,7 +102,7 @@ describe('playerNo', () => {
     0b000000001, // 1P
   ]
   for (let i = 0; i < positions.length; i++) {
-    const expected = i % 2 === 0 ? 2 : 1
+    const expected = (i + 1) % 2
     test(`after move() x ${1 + i} playerNo should be ${expected}`, () => {
       for (let j = 0; j <= i; j++) {
         act(() => result.current.move(positions[j]))
@@ -238,7 +238,7 @@ describe('pvpRecords', () => {
   })
   for (let i = 0; i <= 3; i++) {
     test(`p1Victory is ${i} after p1 winning ${i} times`, () => {
-      act(() => result.current.setPlayMode(PlayMode.Mode2P))
+      act(() => result.current.setPlayMode(PlayMode.ModePvP))
       for (let j = 0; j < i; j++) {
         p1VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
         act(() => result.current.move(0b100000000)) // next
@@ -249,7 +249,7 @@ describe('pvpRecords', () => {
 
   for (let i = 0; i <= 3; i++) {
     test(`p2Victory is ${i} after p2 winning ${i} times`, () => {
-      act(() => result.current.setPlayMode(PlayMode.Mode2P))
+      act(() => result.current.setPlayMode(PlayMode.ModePvP))
       for (let j = 0; j < i; j++) {
         p2VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
         act(() => result.current.move(0b100000000)) // next
@@ -260,7 +260,7 @@ describe('pvpRecords', () => {
 
   for (let i = 0; i <= 3; i++) {
     test(`tie is ${i} after tie ${i} times`, () => {
-      act(() => result.current.setPlayMode(PlayMode.Mode2P))
+      act(() => result.current.setPlayMode(PlayMode.ModePvP))
       for (let j = 0; j < i; j++) {
         tiePatterns.forEach((p) => act(() => result.current.move(p)))
         act(() => result.current.move(0b100000000)) // next
@@ -307,15 +307,15 @@ describe('aiMove', () => {
     const lastMove = result.current.p2Moves
     act(() => result.current.aiMove()) // 2P
     expect(result.current.p2Moves).toBe(lastMove)
-    expect(result.current.playerNo).toBe(1)
+    expect(result.current.playerNo).toBe(0)
   })
 })
 
 describe('load', () => {
   const { result } = renderHook(() => useGameStore())
-  test('new game localStorage is 0_1_0_0_0_0_0_0_0_0', () => {
-    expect(result.current.playMode).toBe(PlayMode.Mode1P)
-    expect(result.current.playerNo).toBe(1)
+  test('new game localStorage is 0_0_0_0_0_0_0_0_0_0', () => {
+    expect(result.current.playMode).toBe(PlayMode.ModePvC)
+    expect(result.current.playerNo).toBe(0)
     expect(result.current.p1Moves).toBe(0b000000000)
     expect(result.current.p2Moves).toBe(0b000000000)
     expect(result.current.pvcRecords).toEqual([0, 0, 0])
@@ -323,17 +323,17 @@ describe('load', () => {
   })
   test('localStorage is invalid', () => {
     act(() => result.current.load())
-    expect(result.current.playMode).toBe(PlayMode.Mode1P)
-    expect(result.current.playerNo).toBe(1)
+    expect(result.current.playMode).toBe(PlayMode.ModePvC)
+    expect(result.current.playerNo).toBe(0)
     expect(result.current.p1Moves).toBe(0b000000000)
     expect(result.current.p2Moves).toBe(0b000000000)
     expect(result.current.pvcRecords).toEqual([0, 0, 0])
     expect(result.current.pvpRecords).toEqual([0, 0, 0])
   })
-  test('load is 1_2_1_2_3_4_5_6_7_8', () => {
-    act(() => result.current.load('1_2_1_2_3_4_5_6_7_8'))
-    expect(result.current.playMode).toBe(PlayMode.Mode2P)
-    expect(result.current.playerNo).toBe(2)
+  test('load is 1_1_1_2_3_4_5_6_7_8', () => {
+    act(() => result.current.load('1_1_1_2_3_4_5_6_7_8'))
+    expect(result.current.playMode).toBe(PlayMode.ModePvP)
+    expect(result.current.playerNo).toBe(1)
     expect(result.current.p1Moves).toBe(0b000000001)
     expect(result.current.p2Moves).toBe(0b000000010)
     expect(result.current.pvcRecords).toEqual([3, 4, 5])

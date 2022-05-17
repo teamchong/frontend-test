@@ -3,8 +3,9 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { VICTORY_PATTERNS, TIE_PATTERN } from '../constants'
 
 export enum PlayMode {
-  Mode1P,
-  Mode2P,
+  ModePvC,
+  ModePvP,
+  ModeCvP,
 }
 
 export enum GameStatus {
@@ -35,8 +36,8 @@ export type GameStore = {
 
 export const useGameStore = create(
   subscribeWithSelector<GameStore>((set, get) => ({
-    playMode: PlayMode.Mode1P,
-    playerNo: 1,
+    playMode: PlayMode.ModePvC,
+    playerNo: 0,
     p1Moves: 0b0,
     p2Moves: 0b0,
     pvcRecords: [0, 0, 0],
@@ -63,7 +64,7 @@ export const useGameStore = create(
     },
     setPlayMode: (playMode) =>
       set({
-        playerNo: 1,
+        playerNo: 0,
         p1Moves: 0b0,
         p2Moves: 0b0,
         playMode,
@@ -74,7 +75,7 @@ export const useGameStore = create(
           if (get().gameStatus(p1Moves!, p2Moves!) !== GameStatus.InProgress) {
             // game ended, reset for next game
             return {
-              playerNo: 1,
+              playerNo: 0,
               p1Moves: 0b0,
               p2Moves: 0b0,
             }
@@ -89,17 +90,17 @@ export const useGameStore = create(
           } else {
             // move and opponent turn
             const next: Partial<GameStore> = {
-              playerNo: 1 + (playerNo % 2),
-              p1Moves: playerNo === 1 ? p1Moves | position : p1Moves,
-              p2Moves: playerNo === 2 ? p2Moves | position : p2Moves,
+              playerNo: (playerNo + 1) % 2,
+              p1Moves: playerNo === 0 ? p1Moves | position : p1Moves,
+              p2Moves: playerNo === 1 ? p2Moves | position : p2Moves,
             }
             // if game eneded, added result to records
             const newGameStatus = get().gameStatus(next.p1Moves!, next.p2Moves!)
             if (newGameStatus !== GameStatus.InProgress) {
               const [p1Victory, p2Victory, tie] =
-                playMode === PlayMode.Mode1P ? pvcRecords : pvpRecords
+                playMode === PlayMode.ModePvC ? pvcRecords : pvpRecords
               const field =
-                playMode === PlayMode.Mode1P ? 'pvcRecords' : 'pvpRecords'
+                playMode === PlayMode.ModePvC ? 'pvcRecords' : 'pvpRecords'
               switch (newGameStatus) {
                 case GameStatus.P1Victory:
                   next[field] = [p1Victory + 1, p2Victory, tie]
@@ -127,26 +128,32 @@ export const useGameStore = create(
         victoryPattern,
         move,
       } = get()
-      if (playMode === PlayMode.Mode1P && playerNo !== 1) {
+      if (
+        (playMode === PlayMode.ModePvC && playerNo === 1) ||
+        (playMode === PlayMode.ModeCvP && playerNo === 0)
+      ) {
         if (gameStatus(p1Moves, p2Moves) !== GameStatus.InProgress) {
           // game ended, let user click for next game
-          set({ playerNo: 1 })
+          set({ playerNo: playMode === PlayMode.ModePvC ? 0 : 1 })
         } else {
           // find all non-occupied positions
           const nonOccupied = cells().filter((p) => !((p1Moves | p2Moves) & p))
-          const p2VictoryMove = nonOccupied.find((p) =>
-            victoryPattern(p2Moves | p)
+          const myMoves = playMode === PlayMode.ModePvC ? p2Moves : p1Moves
+          const myVictoryMove = nonOccupied.find((p) =>
+            victoryPattern(myMoves | p)
           )
-          if (p2VictoryMove) {
+          if (myVictoryMove) {
             // end the game with victory
-            move(p2VictoryMove)
+            move(myVictoryMove)
           } else {
-            const p1VictoryMove = nonOccupied.find((p) =>
-              victoryPattern(p1Moves | p)
+            const opponentMoves =
+              playMode === PlayMode.ModePvC ? p1Moves : p2Moves
+            const opponentVictoryMove = nonOccupied.find((p) =>
+              victoryPattern(opponentMoves | p)
             )
-            if (p1VictoryMove) {
+            if (opponentVictoryMove) {
               // prevent lossing the game
-              move(p1VictoryMove)
+              move(opponentVictoryMove)
             } else {
               // random move
               const nextMove =

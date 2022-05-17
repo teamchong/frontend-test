@@ -23,7 +23,10 @@ export const Board: FC = () => {
     useGameStore(selector)
 
   useEffect(() => {
-    if (playMode === PlayMode.Mode1P && playerNo !== 1)
+    if (
+      (playMode === PlayMode.ModePvC && playerNo === 1) ||
+      (playMode === PlayMode.ModeCvP && playerNo === 0)
+    )
       setTimeout(() => aiMove(), 300)
   }, [playMode, playerNo, aiMove])
 
