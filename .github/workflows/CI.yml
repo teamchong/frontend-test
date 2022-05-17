@@ -16,7 +16,7 @@ jobs:
           cache-dependency-path: 'yarn.lock'
       - name: Test Build
         run: |
-          runyarn set version from sources
+          yarn set version from sources
           yarn install --immutable
           yarn build
       - name: Unit Testing & Coverage
