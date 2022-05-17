@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'vitest'
 import { VICTORY_PATTERNS, TIE_PATTERN } from './index'
 
 describe('constant values', () => {

@@ -1,5 +1,4 @@
-import { describe, expect, test, beforeEach, beforeAll, afterAll } from 'vitest'
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook, act } from '@testing-library/react-hooks/pure'
 import { VICTORY_PATTERNS } from '../constants'
 import { GameStatus, PlayMode, useGameStore } from './useGameStore'
 
@@ -33,14 +32,16 @@ const tiePatterns = [
 ]
 
 beforeEach(() => {
-  useGameStore.setState({
-    playMode: PlayMode.Mode1P,
-    playerNo: 1,
-    p1Moves: 0b0,
-    p2Moves: 0b0,
-    pvcRecords: [0, 0, 0],
-    pvpRecords: [0, 0, 0],
-  })
+  act(() =>
+    useGameStore.setState({
+      playMode: PlayMode.Mode1P,
+      playerNo: 1,
+      p1Moves: 0b0,
+      p2Moves: 0b0,
+      pvcRecords: [0, 0, 0],
+      pvpRecords: [0, 0, 0],
+    })
+  )
 })
 
 describe('cells', () => {
@@ -329,7 +330,7 @@ describe('load', () => {
     expect(result.current.pvcRecords).toEqual([0, 0, 0])
     expect(result.current.pvpRecords).toEqual([0, 0, 0])
   })
-  test('localStorage is 1_2_1_2_3_4_5_6_7_8', () => {
+  test('load is 1_2_1_2_3_4_5_6_7_8', () => {
     act(() => result.current.load('1_2_1_2_3_4_5_6_7_8'))
     expect(result.current.playMode).toBe(PlayMode.Mode2P)
     expect(result.current.playerNo).toBe(2)
