@@ -15,7 +15,7 @@ jobs:
           node-version: 16
           cache: 'yarn'
           cache-dependency-path: 'yarn.lock'
-      - name: Install Deps
+      - name: Install project deps
         run: |
           yarn set version berry
           yarn install --immutable --immutable-cache
@@ -32,10 +32,10 @@ jobs:
 
       - name: Build
         run: |
-          yarn next telemetry disable
+          yarn next telemetry disable > /dev/null
           yarn build
 
-      - name: Unit Testing & Coverage
+      - name: Unit testing & check code coverage
         run: yarn coverage
 
       - name: Cache playwright binaries
@@ -61,6 +61,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./build
-          enable_jekyll: false
