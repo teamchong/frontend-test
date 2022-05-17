@@ -42,8 +42,10 @@ jobs:
       - name: Unit testing & check code coverage
         run: |
           yarn test:ci
-          echo 'repo-token: ${{ secrets.COVERALLS_REPO_TOKEN }}' > .coveralls.yml
-          cat coverage/lcov.info | yarn dlx coveralls
+          echo "repo-token: $COVERALLS_REPO_TOKEN" > .coveralls.yml
+          cat coverage/lcov.info | yarn coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
