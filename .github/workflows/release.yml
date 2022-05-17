@@ -62,7 +62,7 @@ jobs:
         if: always()
       - name: e2e Testing
         run: yarn test:e2e
-      - name: Upload test results vidoes
+      - name: Upload e2e test videos
         if: always()
         uses: actions/upload-artifact@v3
         with:
