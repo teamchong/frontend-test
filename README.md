@@ -7,12 +7,9 @@ This repository contains web based interactive Tic-Tac-Toe game.
 
 ## Demo
 
-[GitHub Pages](https://teamchong.github.io/frontend-test/)
-
----
-
 ![image psd](https://user-images.githubusercontent.com/25894545/168828443-98e8df3c-59bb-408e-b533-b2d295b303ee.png)
 
+[GitHub Pages](https://teamchong.github.io/frontend-test/)
 
 ## Controls
 
