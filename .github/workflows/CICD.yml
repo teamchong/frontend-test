@@ -33,9 +33,8 @@ jobs:
 
       - name: Build NextJS
         run: |
-          NEXT_BASE_PATH=$(basename ${{ github.repository }})
           yarn next telemetry disable > /dev/null
-          yarn build
+          NEXT_BASE_PATH=$(basename ${{ github.repository }}) yarn build
 
       - name: Unit testing & check code coverage
         run: yarn coverage
@@ -47,7 +46,9 @@ jobs:
           path: ~/.cache/ms-playwright
           key: cache-playwright-${{ runner.os }}
       - name: Install playwright deps
-        run: npx playwright install --with-deps
+        run: |
+          yarn dlx playwright install --with-deps --dry-run
+          yarn dlx playwright install --with-deps
         if: always()
       - name: e2e Testing
         run: yarn test:e2e
