@@ -2570,6 +2570,7 @@ __metadata:
     jsdom: ^19.0.0
     lint-staged: ^12.4.1
     next: 12.1.6
+    playwright: ^1.22.0
     postcss: ^8.4.13
     prettier: ^2.6.2
     react: 18.1.0
@@ -4176,6 +4177,17 @@ __metadata:
   bin:
     playwright: cli.js
   checksum: e4eb2069961204d49818fb5575cf7310e7bd90c0b1dd2a84229c29e47a0257a02069f4bb3b802651f30efada850daf1555097748c27ca9a1b1151c67bce0cfe0
+  languageName: node
+  linkType: hard
+
+"playwright@npm:^1.22.0":
+  version: 1.22.0
+  resolution: "playwright@npm:1.22.0"
+  dependencies:
+    playwright-core: 1.22.0
+  bin:
+    playwright: cli.js
+  checksum: 3f8bb4e85ba71268cde7c997ec68d33da2b78eea58e0ba49b6f6b6fe988a0e6c63310723c660e7fa335024cbf8df911f6c76fb3044e91f10fcc7ee4971bb6fd9
   languageName: node
   linkType: hard
 

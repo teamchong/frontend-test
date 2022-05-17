@@ -47,8 +47,8 @@ jobs:
           key: cache-playwright-${{ runner.os }}
       - name: Install playwright deps
         run: |
-          yarn dlx playwright install --with-deps --dry-run
-          yarn dlx playwright install --with-deps
+          yarn playwright install-deps --dry-run
+          yarn playwright install-deps
         if: always()
       - name: e2e Testing
         run: yarn test:e2e
