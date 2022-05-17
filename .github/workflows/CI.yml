@@ -22,4 +22,6 @@ jobs:
       - name: Unit Testing & Coverage
         run: yarn coverage
       - name: e2e Testing
-        run: yarn test:e2e
+        run: |
+          yarn dlx playwright install-deps
+          yarn test:e2e
