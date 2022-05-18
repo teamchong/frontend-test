@@ -1,4 +1,5 @@
 import create from 'zustand'
+import shallow from 'zustand/shallow'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { VICTORY_PATTERNS, TIE_PATTERN } from '../constants'
 
@@ -30,7 +31,7 @@ export type GameStore = {
   setPlayMode(playMode: PlayMode): void
   move(position: number): void
   aiMove(): void
-  state(): string
+  serialize(): string
   load(data?: string): void
   // debug(pMoves: number, p2Moves: number): string
 }
@@ -166,7 +167,7 @@ export const useGameStore = create(
         }
       }
     },
-    state: () =>
+    serialize: () =>
       [
         get().playMode,
         get().playerNo,
@@ -177,7 +178,7 @@ export const useGameStore = create(
       ].join('_'),
     load: (setting) =>
       set(() => {
-        const parseData = (data: string | null) => {
+        const parse = (data: string | null) => {
           const params = data
             ?.split('_')
             .map((l) => parseInt(l))
@@ -207,11 +208,9 @@ export const useGameStore = create(
           return null
         }
         return (
-          parseData(setting ?? null) ??
-          parseData(
-            new URLSearchParams(location.hash.replace(/^#/, '')).get('s')
-          ) ??
-          parseData(localStorage.getItem('gameState')) ??
+          parse(setting ?? null) ??
+          parse(getParams().get('s')) ??
+          parse(localStorage.getItem('gameState')) ??
           {}
         )
       }),
@@ -235,9 +234,13 @@ export const useGameStore = create(
 )
 
 useGameStore.subscribe((state) => {
-  const data = state.state()
+  const data = state.serialize()
   localStorage.setItem('gameState', data)
-  const params = new URLSearchParams(location.hash.replace(/^#/, ''))
+  const params = getParams()
   params.set('s', data)
   location.hash = '#' + params.toString()
 })
+
+export function getParams() {
+  return new URLSearchParams(location.hash.replace(/^#/, ''))
+}

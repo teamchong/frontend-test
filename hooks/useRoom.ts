@@ -1,89 +1,134 @@
-import { useEffect, useRef, useState } from 'react'
-import { PlayMode, useGameStore } from './useGameStore'
+import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import { GameStore, getParams, PlayMode, useGameStore } from './useGameStore'
 
 export const ROOM_API_BASE_URL = 'https://keyvalue.immanuel.co/api/KeyVal'
 
-export function useRoom(init?: string): string {
-  const [room, setRoom] = useState('')
+export async function createRoom(): Promise<string> {
+  const response = await fetch(`${ROOM_API_BASE_URL}/GetAppKey`)
+  const payload = await response.json()
+  return `${payload}`
+}
+
+// create a new room and initialize state
+export function loadNewRoom(
+  room: MutableRefObject<string>,
+  version: MutableRefObject<number>
+) {
+  return async function () {
+    try {
+      const newRoom = await createRoom()
+      const isCreated = setRemoteState(
+        newRoom,
+        version.current,
+        useGameStore.getState().serialize()
+      )
+      if (newRoom && isCreated) {
+        room.current = newRoom
+        const params = getParams()
+        params.set('r', newRoom)
+        location.hash = '#' + params.toString()
+      }
+    } catch (error) {
+      console.error(error)
+    }
+    setTimeout(polling(room, version), 100)
+  }
+}
+
+export async function getRemoteState(
+  room: string
+): Promise<[number | null, string | null]> {
+  const response = await fetch(`${ROOM_API_BASE_URL}/GetValue/${room}/g`)
+  const payload = await response.json()
+  const result = /^(\d+)_(.+)$/.exec(payload)
+  if (result) {
+    const newVersion = parseInt(result[1])
+    return [newVersion, result[2]]
+  }
+  return [null, null]
+}
+
+export async function setRemoteState(
+  room: string,
+  version: number,
+  gameState: string
+): Promise<boolean> {
+  const payload = await fetch(
+    `${ROOM_API_BASE_URL}/UpdateValue/${room}/g/${encodeURIComponent(
+      version + '_' + gameState
+    )}`,
+    { method: 'POST' }
+  )
+  return !!(await payload.json())
+}
+
+export function gameStateSubscription(
+  room: MutableRefObject<string>,
+  version: MutableRefObject<number>
+) {
+  return async (state: GameStore): Promise<void> => {
+    if (state.playMode !== PlayMode.ModePvP) {
+      return
+    }
+    try {
+      const [remoteVersion] = await getRemoteState(room.current)
+      if (remoteVersion !== null && remoteVersion > version.current) {
+        return
+      }
+      version.current++
+      await setRemoteState(room.current, version.current, state.serialize())
+    } catch (error) {
+      console.error(error)
+    }
+  }
+}
+
+// retrieve latest state from server, override if version is the same or higher
+export function polling(
+  room: MutableRefObject<string>,
+  version: MutableRefObject<number>
+) {
+  async function internal() {
+    try {
+      if (room && useGameStore.getState().playMode === PlayMode.ModePvP) {
+        const [remoteVersion, remoteGameState] = await getRemoteState(
+          room.current
+        )
+        if (
+          remoteVersion !== null &&
+          remoteVersion > version.current &&
+          remoteGameState !== null &&
+          remoteGameState !== useGameStore.getState().serialize()
+        ) {
+          useGameStore.getState().load(remoteGameState)
+          version.current = remoteVersion
+        }
+      }
+    } catch (error) {
+      console.error(error)
+    }
+    setTimeout(() => internal(), 100)
+  }
+  return internal
+}
+
+export function useRoom(
+  initial?: string
+): [MutableRefObject<string>, MutableRefObject<number>] {
+  const room = useRef('')
   const version = useRef(0)
   useEffect(() => {
-    // retrieve latest state from server, override if version is the same or higher
-    async function polling() {
-      try {
-        if (room && useGameStore.getState().playMode !== PlayMode.ModePvC) {
-          const data = await (
-            await fetch(`${ROOM_API_BASE_URL}/GetValue/${room}/g`)
-          ).json()
-          const result = /^(\d+)_(.+)$/.exec(data)
-          if (result) {
-            const newVersion = parseInt(result[1])
-            if (version.current <= newVersion) {
-              version.current = newVersion
-              const gameState = result[2]
-              if (
-                useGameStore.getState().playMode === PlayMode.ModePvP &&
-                useGameStore.getState().state() !== gameState
-              ) {
-                useGameStore.getState().load(gameState)
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error(error)
-      }
-      setTimeout(() => polling(), 100)
-    }
     // subscibe to local state change, and push state to server
-    useGameStore.subscribe((state, prevState) => {
-      if (state.playMode !== prevState.playMode) {
-        version.current = 0
-      }
-      if (room && state.playMode === PlayMode.ModePvP) {
-        version.current++
-        return fetch(
-          `${ROOM_API_BASE_URL}/UpdateValue/${room}/g/${encodeURIComponent(
-            version.current + '_' + state.state()
-          )}`,
-          { method: 'POST' }
-        )
-      }
-    })
-    // create a new room and initialize state
-    async function loadNewRoom() {
-      try {
-        const newRoom = await (
-          await fetch(`${ROOM_API_BASE_URL}/GetAppKey`)
-        ).json()
-        const isCreated = await (
-          await fetch(
-            `${ROOM_API_BASE_URL}/UpdateValue/${room}/g/${encodeURIComponent(
-              version.current + '_' + useGameStore.getState().state()
-            )}`,
-            { method: 'POST' }
-          )
-        ).json()
-        if (newRoom && isCreated) {
-          setRoom(newRoom)
-          const params = new URLSearchParams(location.hash.replace(/^#/, ''))
-          params.set('r', newRoom)
-          location.hash = '#' + params.toString()
-        }
-      } catch (error) {
-        console.error(error)
-      }
-      setTimeout(polling, 0)
-    }
+    useGameStore.subscribe(gameStateSubscription(room, version))
 
     // initialization, run once
-    const room =
-      init ?? new URLSearchParams(location.hash.replace(/^#/, '')).get('r')
-    if (room) {
-      setRoom(room)
-      setTimeout(polling, 0)
+    const roomInHash = initial ?? getParams().get('r')
+    if (roomInHash) {
+      room.current = roomInHash
+      setTimeout(polling(room, version), 0)
     } else {
-      setTimeout(loadNewRoom, 0)
+      setTimeout(loadNewRoom(room, version), 0)
     }
   }, [])
-  return room
+  return [room, version]
 }

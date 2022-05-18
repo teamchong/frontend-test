@@ -45,50 +45,50 @@ beforeEach(() => {
 })
 
 describe('cells', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game cells should be unique', () => {
-    expect(new Set(result.current.cells()).size).toBe(
-      result.current.cells().length
+    expect(new Set(gameStore.current.cells()).size).toBe(
+      gameStore.current.cells().length
     )
   })
 })
 
 describe('victoryPattern', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('victoryPattern is 0 when no occupied', () => {
-    expect(result.current.victoryPattern(0)).toBe(0)
+    expect(gameStore.current.victoryPattern(0)).toBe(0)
   })
   for (const pattern of VICTORY_PATTERNS) {
     test(
       `victoryPattern is ${pattern.toString(2)} when ` +
         `${pattern.toString(2)} is occupied `,
       () => {
-        expect(result.current.victoryPattern(pattern)).toBe(pattern)
+        expect(gameStore.current.victoryPattern(pattern)).toBe(pattern)
       }
     )
   }
 })
 
 describe('playMode', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game playMode is ModePvC', () => {
-    expect(result.current.playMode).toBe(PlayMode.ModePvC)
+    expect(gameStore.current.playMode).toBe(PlayMode.ModePvC)
   })
   test('setPlayMode should change playMode from ModePvC to ModePvP', () => {
-    act(() => result.current.setPlayMode(PlayMode.ModePvP))
-    expect(result.current.playMode).toBe(PlayMode.ModePvP)
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    expect(gameStore.current.playMode).toBe(PlayMode.ModePvP)
   })
   test('setPlayMode should change playMode from ModePvP to ModePvC', () => {
-    act(() => result.current.setPlayMode(PlayMode.ModePvP))
-    act(() => result.current.setPlayMode(PlayMode.ModePvC))
-    expect(result.current.playMode).toBe(PlayMode.ModePvC)
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvC))
+    expect(gameStore.current.playMode).toBe(PlayMode.ModePvC)
   })
 })
 
 describe('playerNo', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game playerNo is 0', () => {
-    expect(result.current.playerNo).toBe(0)
+    expect(gameStore.current.playerNo).toBe(0)
   })
   const positions = [
     0b100000000, // 1P
@@ -105,258 +105,276 @@ describe('playerNo', () => {
     const expected = (i + 1) % 2
     test(`after move() x ${1 + i} playerNo should be ${expected}`, () => {
       for (let j = 0; j <= i; j++) {
-        act(() => result.current.move(positions[j]))
+        act(() => gameStore.current.move(positions[j]))
       }
-      expect(result.current.playerNo).toBe(expected)
+      expect(gameStore.current.playerNo).toBe(expected)
     })
   }
 })
 
 describe('gameStatus', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
 
   test('new game gameStatus is InProgress', () => {
     expect(
-      result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
+      gameStore.current.gameStatus(
+        gameStore.current.p1Moves,
+        gameStore.current.p2Moves
+      )
     ).toBe(GameStatus.InProgress)
   })
 
   test('gameStatus should be P1Victory', () => {
-    p1VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
+    p1VictoryPatterns.forEach((p) => act(() => gameStore.current.move(p)))
     expect(
-      result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
+      gameStore.current.gameStatus(
+        gameStore.current.p1Moves,
+        gameStore.current.p2Moves
+      )
     ).toBe(GameStatus.P1Victory)
   })
 
   test('gameStatus should be P2Victory', () => {
-    p2VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
+    p2VictoryPatterns.forEach((p) => act(() => gameStore.current.move(p)))
     expect(
-      result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
+      gameStore.current.gameStatus(
+        gameStore.current.p1Moves,
+        gameStore.current.p2Moves
+      )
     ).toBe(GameStatus.P2Victory)
   })
 
   test('gameStatus should be Tie', () => {
-    tiePatterns.forEach((p) => act(() => result.current.move(p)))
+    tiePatterns.forEach((p) => act(() => gameStore.current.move(p)))
     expect(
-      result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
+      gameStore.current.gameStatus(
+        gameStore.current.p1Moves,
+        gameStore.current.p2Moves
+      )
     ).toBe(GameStatus.Tie)
   })
 })
 
 describe('p1Moves', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game p1Moves is 0b000000000', () => {
-    expect(result.current.p1Moves).toBe(0b000000000)
+    expect(gameStore.current.p1Moves).toBe(0b000000000)
   })
   test('p1Moves is 0b100000000 after move 0b100000000', () => {
-    act(() => result.current.move(0b100000000)) // 1P
-    expect(result.current.p1Moves).toBe(0b100000000)
+    act(() => gameStore.current.move(0b100000000)) // 1P
+    expect(gameStore.current.p1Moves).toBe(0b100000000)
   })
 
   test('p1Moves is 0b110000000 after move 0b100000000 & 0b010000000', () => {
-    act(() => result.current.move(0b100000000)) // 1P
-    act(() => result.current.move(0b000000001)) // 2P
-    act(() => result.current.move(0b010000000)) // 1P
-    expect(result.current.p1Moves).toBe(0b110000000)
+    act(() => gameStore.current.move(0b100000000)) // 1P
+    act(() => gameStore.current.move(0b000000001)) // 2P
+    act(() => gameStore.current.move(0b010000000)) // 1P
+    expect(gameStore.current.p1Moves).toBe(0b110000000)
   })
   test('ignore if cell is occupied or invalid move', () => {
-    act(() => result.current.move(0b1000000000)) // invalid
-    act(() => result.current.move(0b100000000)) // 1P
-    act(() => result.current.move(0b000000001)) // 2P
-    act(() => result.current.move(0b100000000)) // 1P
-    expect(result.current.p1Moves).toBe(0b100000000)
+    act(() => gameStore.current.move(0b1000000000)) // invalid
+    act(() => gameStore.current.move(0b100000000)) // 1P
+    act(() => gameStore.current.move(0b000000001)) // 2P
+    act(() => gameStore.current.move(0b100000000)) // 1P
+    expect(gameStore.current.p1Moves).toBe(0b100000000)
   })
 })
 
 describe('p2Moves', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game p2Moves is 0b000000000', () => {
-    expect(result.current.p2Moves).toBe(0b000000000)
+    expect(gameStore.current.p2Moves).toBe(0b000000000)
   })
   test('p2Moves is 0b100000000 after move 0b100000000', () => {
-    act(() => result.current.move(0b000000001)) // 1P
-    act(() => result.current.move(0b100000000)) // 2P
-    expect(result.current.p2Moves).toBe(0b100000000)
+    act(() => gameStore.current.move(0b000000001)) // 1P
+    act(() => gameStore.current.move(0b100000000)) // 2P
+    expect(gameStore.current.p2Moves).toBe(0b100000000)
   })
 
   test('p2Moves is 0b110000000 after move 0b100000000 & 0b010000000', () => {
-    act(() => result.current.move(0b000000001)) // 1P
-    act(() => result.current.move(0b100000000)) // 2P
-    act(() => result.current.move(0b000000010)) // 1P
-    act(() => result.current.move(0b010000000)) // 2P
-    expect(result.current.p2Moves).toBe(0b110000000)
+    act(() => gameStore.current.move(0b000000001)) // 1P
+    act(() => gameStore.current.move(0b100000000)) // 2P
+    act(() => gameStore.current.move(0b000000010)) // 1P
+    act(() => gameStore.current.move(0b010000000)) // 2P
+    expect(gameStore.current.p2Moves).toBe(0b110000000)
   })
   test('ignore if cell is occupied or invalid move', () => {
-    act(() => result.current.move(0b100000000)) // 1P
-    act(() => result.current.move(0b1000000000)) // invalid
-    act(() => result.current.move(0b100000000)) // invalid
-    act(() => result.current.move(0b010000000)) // 2P
-    expect(result.current.p2Moves).toBe(0b010000000)
+    act(() => gameStore.current.move(0b100000000)) // 1P
+    act(() => gameStore.current.move(0b1000000000)) // invalid
+    act(() => gameStore.current.move(0b100000000)) // invalid
+    act(() => gameStore.current.move(0b010000000)) // 2P
+    expect(gameStore.current.p2Moves).toBe(0b010000000)
   })
 })
 
 describe('pvcRecords', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game pvcRecords is [0, 0, 0]', () => {
-    expect(result.current.pvcRecords).toEqual([0, 0, 0])
+    expect(gameStore.current.pvcRecords).toEqual([0, 0, 0])
   })
   for (let i = 0; i <= 3; i++) {
     test(`p1Victory is ${i} after p1 winning ${i} times`, () => {
       for (let j = 0; j < i; j++) {
-        p1VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
-        act(() => result.current.move(0b100000000)) // next
+        p1VictoryPatterns.forEach((p) => act(() => gameStore.current.move(p)))
+        act(() => gameStore.current.move(0b100000000)) // next
       }
-      expect(result.current.pvcRecords).toEqual([i, 0, 0])
+      expect(gameStore.current.pvcRecords).toEqual([i, 0, 0])
     })
   }
 
   for (let i = 0; i <= 3; i++) {
     test(`p2Victory is ${i} after p2 winning ${i} times`, () => {
       for (let j = 0; j < i; j++) {
-        p2VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
-        act(() => result.current.move(0b100000000)) // next
+        p2VictoryPatterns.forEach((p) => act(() => gameStore.current.move(p)))
+        act(() => gameStore.current.move(0b100000000)) // next
       }
-      expect(result.current.pvcRecords).toEqual([0, i, 0])
+      expect(gameStore.current.pvcRecords).toEqual([0, i, 0])
     })
   }
 
   for (let i = 0; i <= 3; i++) {
     test(`tie is ${i} after tie ${i} times`, () => {
       for (let j = 0; j < i; j++) {
-        tiePatterns.forEach((p) => act(() => result.current.move(p)))
-        act(() => result.current.move(0b100000000)) // next
+        tiePatterns.forEach((p) => act(() => gameStore.current.move(p)))
+        act(() => gameStore.current.move(0b100000000)) // next
       }
-      expect(result.current.pvcRecords).toEqual([0, 0, i])
+      expect(gameStore.current.pvcRecords).toEqual([0, 0, i])
     })
   }
 })
 
 describe('pvpRecords', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game pvpRecords is [0, 0, 0]', () => {
-    expect(result.current.pvpRecords).toEqual([0, 0, 0])
+    expect(gameStore.current.pvpRecords).toEqual([0, 0, 0])
   })
   for (let i = 0; i <= 3; i++) {
     test(`p1Victory is ${i} after p1 winning ${i} times`, () => {
-      act(() => result.current.setPlayMode(PlayMode.ModePvP))
+      act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
       for (let j = 0; j < i; j++) {
-        p1VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
-        act(() => result.current.move(0b100000000)) // next
+        p1VictoryPatterns.forEach((p) => act(() => gameStore.current.move(p)))
+        act(() => gameStore.current.move(0b100000000)) // next
       }
-      expect(result.current.pvpRecords).toEqual([i, 0, 0])
+      expect(gameStore.current.pvpRecords).toEqual([i, 0, 0])
     })
   }
 
   for (let i = 0; i <= 3; i++) {
     test(`p2Victory is ${i} after p2 winning ${i} times`, () => {
-      act(() => result.current.setPlayMode(PlayMode.ModePvP))
+      act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
       for (let j = 0; j < i; j++) {
-        p2VictoryPatterns.forEach((p) => act(() => result.current.move(p)))
-        act(() => result.current.move(0b100000000)) // next
+        p2VictoryPatterns.forEach((p) => act(() => gameStore.current.move(p)))
+        act(() => gameStore.current.move(0b100000000)) // next
       }
-      expect(result.current.pvpRecords).toEqual([0, i, 0])
+      expect(gameStore.current.pvpRecords).toEqual([0, i, 0])
     })
   }
 
   for (let i = 0; i <= 3; i++) {
     test(`tie is ${i} after tie ${i} times`, () => {
-      act(() => result.current.setPlayMode(PlayMode.ModePvP))
+      act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
       for (let j = 0; j < i; j++) {
-        tiePatterns.forEach((p) => act(() => result.current.move(p)))
-        act(() => result.current.move(0b100000000)) // next
+        tiePatterns.forEach((p) => act(() => gameStore.current.move(p)))
+        act(() => gameStore.current.move(0b100000000)) // next
       }
-      expect(result.current.pvpRecords).toEqual([0, 0, i])
+      expect(gameStore.current.pvpRecords).toEqual([0, 0, i])
     })
   }
 })
 
 describe('aiMove', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('aiMove move second on PvC', () => {
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
-    act(() => result.current.aiMove()) // 1P
-    expect(result.current.p1Moves).toBe(0b000000000)
+    act(() => gameStore.current.aiMove()) // 1P
+    expect(gameStore.current.p1Moves).toBe(0b000000000)
   })
   test('aiMove move first on CvP', () => {
     act(() => useGameStore.setState({ playMode: PlayMode.ModeCvP }))
-    act(() => result.current.aiMove()) // 1P
-    expect(result.current.p1Moves).not.toBe(0b000000000)
+    act(() => gameStore.current.aiMove()) // 1P
+    expect(gameStore.current.p1Moves).not.toBe(0b000000000)
   })
   test('aiMove after 1P', () => {
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
-    act(() => result.current.move(0b100000000)) // 1P
-    act(() => result.current.aiMove()) // 2P
-    expect(result.current.p1Moves).toBe(0b100000000)
-    expect(result.current.p2Moves).not.toBe(0b000000000)
+    act(() => gameStore.current.move(0b100000000)) // 1P
+    act(() => gameStore.current.aiMove()) // 2P
+    expect(gameStore.current.p1Moves).toBe(0b100000000)
+    expect(gameStore.current.p2Moves).not.toBe(0b000000000)
   })
   test('aiMove almost win', () => {
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvP }))
     for (let i = 0; i < p2VictoryPatterns.length - 1; i++) {
-      act(() => result.current.move(p2VictoryPatterns[i]))
+      act(() => gameStore.current.move(p2VictoryPatterns[i]))
     }
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
-    act(() => result.current.aiMove()) // 2P
+    act(() => gameStore.current.aiMove()) // 2P
     expect(
-      result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
+      gameStore.current.gameStatus(
+        gameStore.current.p1Moves,
+        gameStore.current.p2Moves
+      )
     ).toBe(GameStatus.P2Victory)
   })
   test('aiMove prevent loss', () => {
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvP }))
     for (let i = 0; i < p1VictoryPatterns.length - 2; i++) {
-      act(() => result.current.move(p1VictoryPatterns[i]))
+      act(() => gameStore.current.move(p1VictoryPatterns[i]))
     }
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
-    act(() => result.current.aiMove()) // 2P
+    act(() => gameStore.current.aiMove()) // 2P
     expect(
-      result.current.gameStatus(result.current.p1Moves, result.current.p2Moves)
+      gameStore.current.gameStatus(
+        gameStore.current.p1Moves,
+        gameStore.current.p2Moves
+      )
     ).not.toBe(GameStatus.P1Victory)
   })
   test('game ended, let user click for next game', () => {
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvP }))
     for (let i = 0; i < tiePatterns.length; i++) {
-      act(() => result.current.move(tiePatterns[i]))
+      act(() => gameStore.current.move(tiePatterns[i]))
     }
     act(() => useGameStore.setState({ playMode: PlayMode.ModePvC }))
-    const lastP2Move = result.current.p2Moves
-    act(() => result.current.aiMove()) // 2P
-    expect(result.current.p2Moves).toBe(lastP2Move)
-    expect(result.current.playerNo).toBe(0)
+    const lastP2Move = gameStore.current.p2Moves
+    act(() => gameStore.current.aiMove()) // 2P
+    expect(gameStore.current.p2Moves).toBe(lastP2Move)
+    expect(gameStore.current.playerNo).toBe(0)
     act(() =>
       useGameStore.setState({ playMode: PlayMode.ModeCvP, playerNo: 0 })
     )
-    const lastP1Move = result.current.p1Moves
-    act(() => result.current.aiMove()) // 1P
-    expect(result.current.p1Moves).toBe(lastP1Move)
-    expect(result.current.playerNo).toBe(1)
+    const lastP1Move = gameStore.current.p1Moves
+    act(() => gameStore.current.aiMove()) // 1P
+    expect(gameStore.current.p1Moves).toBe(lastP1Move)
+    expect(gameStore.current.playerNo).toBe(1)
   })
 })
 
 describe('load', () => {
-  const { result } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   test('new game localStorage is 0_0_0_0_0_0_0_0_0_0', () => {
-    expect(result.current.playMode).toBe(PlayMode.ModePvC)
-    expect(result.current.playerNo).toBe(0)
-    expect(result.current.p1Moves).toBe(0b000000000)
-    expect(result.current.p2Moves).toBe(0b000000000)
-    expect(result.current.pvcRecords).toEqual([0, 0, 0])
-    expect(result.current.pvpRecords).toEqual([0, 0, 0])
+    expect(gameStore.current.playMode).toBe(PlayMode.ModePvC)
+    expect(gameStore.current.playerNo).toBe(0)
+    expect(gameStore.current.p1Moves).toBe(0b000000000)
+    expect(gameStore.current.p2Moves).toBe(0b000000000)
+    expect(gameStore.current.pvcRecords).toEqual([0, 0, 0])
+    expect(gameStore.current.pvpRecords).toEqual([0, 0, 0])
   })
   test('localStorage is invalid', () => {
-    act(() => result.current.load())
-    expect(result.current.playMode).toBe(PlayMode.ModePvC)
-    expect(result.current.playerNo).toBe(0)
-    expect(result.current.p1Moves).toBe(0b000000000)
-    expect(result.current.p2Moves).toBe(0b000000000)
-    expect(result.current.pvcRecords).toEqual([0, 0, 0])
-    expect(result.current.pvpRecords).toEqual([0, 0, 0])
+    act(() => gameStore.current.load())
+    expect(gameStore.current.playMode).toBe(PlayMode.ModePvC)
+    expect(gameStore.current.playerNo).toBe(0)
+    expect(gameStore.current.p1Moves).toBe(0b000000000)
+    expect(gameStore.current.p2Moves).toBe(0b000000000)
+    expect(gameStore.current.pvcRecords).toEqual([0, 0, 0])
+    expect(gameStore.current.pvpRecords).toEqual([0, 0, 0])
   })
   test('load is 1_1_1_2_3_4_5_6_7_8', () => {
-    act(() => result.current.load('1_1_1_2_3_4_5_6_7_8'))
-    expect(result.current.playMode).toBe(PlayMode.ModePvP)
-    expect(result.current.playerNo).toBe(1)
-    expect(result.current.p1Moves).toBe(0b000000001)
-    expect(result.current.p2Moves).toBe(0b000000010)
-    expect(result.current.pvcRecords).toEqual([3, 4, 5])
-    expect(result.current.pvpRecords).toEqual([6, 7, 8])
+    act(() => gameStore.current.load('1_1_1_2_3_4_5_6_7_8'))
+    expect(gameStore.current.playMode).toBe(PlayMode.ModePvP)
+    expect(gameStore.current.playerNo).toBe(1)
+    expect(gameStore.current.p1Moves).toBe(0b000000001)
+    expect(gameStore.current.p2Moves).toBe(0b000000010)
+    expect(gameStore.current.pvcRecords).toEqual([3, 4, 5])
+    expect(gameStore.current.pvpRecords).toEqual([6, 7, 8])
   })
 })
