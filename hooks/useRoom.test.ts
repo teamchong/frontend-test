@@ -122,6 +122,27 @@ describe('gameStateSubscription()', () => {
     )
     expect(room.current[1].current).toBe(0)
   })
+  test('no change', async () => {
+    room.current[1].current = 0
+    gameState.current.setPlayMode(PlayMode.ModePvP)
+    fetchMock.mockResponse((req) =>
+      /\/GetAppKey$/.test(req.url)
+        ? Promise.resolve(JSON.stringify('room-id'))
+        : /\/GetValue\//.test(req.url)
+        ? Promise.resolve(JSON.stringify('0_1_0_0_0_0_0_0_0_0'))
+        : /\/UpdateValue\//.test(req.url)
+        ? Promise.resolve(JSON.stringify('true'))
+        : Promise.reject('unknown ' + req.url)
+    )
+    await act(
+      async () =>
+        await gameStateSubscription(room.current[0], room.current[1])(
+          gameState.current,
+          gameState.current
+        )
+    )
+    expect(room.current[1].current).toBe(0)
+  })
   test('remote version <= local', async () => {
     room.current[1].current = 0
     gameState.current.setPlayMode(PlayMode.ModePvP)
@@ -178,7 +199,7 @@ describe('polling()', () => {
         : Promise.reject('unknown ' + req.url)
     )
     await act(async () => await polling(room.current[0], room.current[1])())
-    expect(room.current[1].current).toBe(3)
+    expect(room.current[1].current).toBe(2)
   })
   test('polling fail', async () => {
     room.current[1].current = 0

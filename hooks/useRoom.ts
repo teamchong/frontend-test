@@ -1,4 +1,5 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import shallow from 'zustand/shallow'
 import { GameStore, getParams, PlayMode, useGameStore } from './useGameStore'
 
 export const ROOM_API_BASE_URL = 'https://keyvalue.immanuel.co/api/KeyVal'
@@ -66,7 +67,10 @@ export function gameStateSubscription(
   room: MutableRefObject<string>,
   version: MutableRefObject<number>
 ) {
-  return async (state: GameStore): Promise<void> => {
+  return async (state: GameStore, prevState?: GameStore): Promise<void> => {
+    if (shallow(state, prevState)) {
+      return
+    }
     if (state.playMode !== PlayMode.ModePvP) {
       return
     }
@@ -100,8 +104,15 @@ export function polling(
           remoteGameState !== null &&
           remoteGameState !== useGameStore.getState().serialize()
         ) {
+          const unsub = useGameStore.subscribe(
+            (s) => s,
+            () => {
+              version.current = remoteVersion
+              unsub()
+            },
+            { fireImmediately: true }
+          )
           useGameStore.getState().load(remoteGameState)
-          version.current = remoteVersion
         }
       }
     } catch (error) {
