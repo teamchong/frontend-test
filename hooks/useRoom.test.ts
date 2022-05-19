@@ -30,6 +30,9 @@ describe('useRoom("room-id")', () => {
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
     expect(room.current.room.current).toBe('room-id')
   })
+  test('unload room', () => {
+    act(() => void (room.current.isExited.current = true))
+  })
 })
 
 describe('createNewRoom()', () => {
@@ -85,7 +88,7 @@ describe('getRemoteState()', () => {
     expect(stateValue?.version).toBe(2)
     expect(stateValue?.state).toBe('1_1_0_0_0_0_0_0_0')
   })
-  test('getRemoteState success alt', async () => {
+  test('getRemoteState take version 1', async () => {
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')

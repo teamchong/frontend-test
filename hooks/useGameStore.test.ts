@@ -31,7 +31,7 @@ const tiePatterns = [
   0b000000001, // 1P
 ]
 
-beforeEach(() => {
+afterEach(() => {
   act(() =>
     useGameStore.setState({
       playMode: PlayMode.ModePvC,
@@ -351,7 +351,7 @@ describe('aiMove', () => {
 
 describe('load', () => {
   const { result: gameStore } = renderHook(() => useGameStore())
-  test('new game localStorage is 0_0_0_0_0_0_0_0_0_0', () => {
+  test('laod 0_0_0_0_0_0_0_0_0_0', () => {
     expect(gameStore.current.playMode).toBe(PlayMode.ModePvC)
     expect(gameStore.current.playerNo).toBe(0)
     expect(gameStore.current.p1Moves).toBe(0b000000000)
@@ -359,7 +359,7 @@ describe('load', () => {
     expect(gameStore.current.pvcRecords).toEqual([0, 0, 0])
     expect(gameStore.current.pvpRecords).toEqual([0, 0, 0])
   })
-  test('localStorage is invalid', () => {
+  test('load invalid', () => {
     act(() => gameStore.current.load())
     expect(gameStore.current.playMode).toBe(PlayMode.ModePvC)
     expect(gameStore.current.playerNo).toBe(0)
@@ -368,7 +368,7 @@ describe('load', () => {
     expect(gameStore.current.pvcRecords).toEqual([0, 0, 0])
     expect(gameStore.current.pvpRecords).toEqual([0, 0, 0])
   })
-  test('load is 1_1_1_2_3_4_5_6_7_8', () => {
+  test('load 1_1_1_2_3_4_5_6_7_8', () => {
     act(() => gameStore.current.load('1_1_1_2_3_4_5_6_7_8'))
     expect(gameStore.current.playMode).toBe(PlayMode.ModePvP)
     expect(gameStore.current.playerNo).toBe(1)
