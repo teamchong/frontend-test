@@ -77,13 +77,14 @@ describe('getRemoteState()', () => {
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
-      if (/\/GetValue\//.test(req.url))
+      if (/\/GetValue\//.test(req.url)) {
         if (/0$/.test(req.url)) return JSON.stringify('8_1_1_0_0_0_0_0_0_0')
-        else return JSON.stringify('8_1_1_0_0_0_0_0_0_0')
+        else return JSON.stringify('9_1_1_0_0_0_0_0_0_0')
+      }
       throw 'unknown ' + req.url
     })
     const stateValue = await getRemoteState('room-id')
-    expect(stateValue?.version).toBe(8)
+    expect(stateValue?.version).toBe(9)
     expect(stateValue?.state).toBe('1_1_0_0_0_0_0_0_0')
   })
   test('getRemoteState fail', async () => {
@@ -156,7 +157,7 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
+        )(gameStore.current.serialize(), '1_0_0_0_0_0_0_0_0_0')
     )
     expect(room.current.version.current).toBe(0)
   })
@@ -176,9 +177,9 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
+        )(gameStore.current.serialize(), '1_1_0_0_0_0_0_0_0_0')
     )
-    expect(room.current.version.current).toBe(9)
+    expect(room.current.version.current).toBe(10)
   })
   test('remote version > local', async () => {
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
@@ -195,7 +196,7 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
+        )(gameStore.current.serialize(), '1_1_0_0_0_0_0_0_0_0')
     )
     expect(room.current.version.current).toBe(0)
   })

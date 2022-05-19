@@ -30,6 +30,7 @@ export function createNewRoom(
       useGameStore.getState().serialize()
     )
     if (newRoom && isCreated) {
+      localStorage.setItem('roomHosted', newRoom)
       room.current = newRoom
       const params = getParams()
       params.set('r', newRoom)
@@ -123,7 +124,6 @@ export function polling(
         versionState.state !== useGameStore.getState().serialize()
       ) {
         version.current = versionState.version
-        // suspenseNextStateChange(true)
         useGameStore.getState().load(versionState.state)
       }
     }
@@ -150,7 +150,7 @@ export function useRoom(initial?: string): {
     // initialization, run once
     const roomInHash = initial ?? getParams().get('r')
     if (roomInHash) {
-      isHost.current = false
+      isHost.current = roomInHash === localStorage.getItem('roomHosted')
       room.current = roomInHash
       setTimeout(polling(room, version), 0)
     } else {
