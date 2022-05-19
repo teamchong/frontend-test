@@ -1,89 +1,111 @@
+import { debug } from 'console'
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
-import shallow from 'zustand/shallow'
 import { GameStore, getParams, PlayMode, useGameStore } from './useGameStore'
+
+export type VersionState = {
+  version: number
+  state: string
+}
 
 export const ROOM_API_BASE_URL = 'https://keyvalue.immanuel.co/api/KeyVal'
 
 export async function createRoom(): Promise<string> {
-  const response = await fetch(`${ROOM_API_BASE_URL}/GetAppKey`)
-  const payload = await response.json()
+  const payload = await fetch(`${ROOM_API_BASE_URL}/GetAppKey`)
+    .then((r) => r.json())
+    .catch(() => Promise.resolve(''))
   return `${payload}`
 }
 
 // create a new room and initialize state
-export function loadNewRoom(
+export function createNewRoom(
   room: MutableRefObject<string>,
   version: MutableRefObject<number>
 ) {
   return async function () {
-    try {
-      const newRoom = await createRoom()
-      const isCreated = setRemoteState(
-        newRoom,
-        version.current,
-        useGameStore.getState().serialize()
-      )
-      if (newRoom && isCreated) {
-        room.current = newRoom
-        const params = getParams()
-        params.set('r', newRoom)
-        location.hash = '#' + params.toString()
-      }
-    } catch (error) {
-      console.error(error)
+    const newRoom = await createRoom()
+    const isCreated = setRemoteState(
+      newRoom,
+      version.current,
+      true,
+      useGameStore.getState().serialize()
+    )
+    if (newRoom && isCreated) {
+      room.current = newRoom
+      const params = getParams()
+      params.set('r', newRoom)
+      location.hash = '#' + params.toString()
     }
-    setTimeout(polling(room, version), 100)
+    setTimeout(polling(room, version), 300)
   }
 }
 
 export async function getRemoteState(
   room: string
-): Promise<[number | null, string | null]> {
-  const response = await fetch(`${ROOM_API_BASE_URL}/GetValue/${room}/g`)
-  const payload = await response.json()
-  const result = /^(\d+)_(.+)$/.exec(payload)
-  if (result) {
-    const newVersion = parseInt(result[1])
-    return [newVersion, result[2]]
+): Promise<VersionState | null> {
+  const response = await Promise.all([
+    fetch(`${ROOM_API_BASE_URL}/GetValue/${room}/0`)
+      .then((r) => r.json())
+      .catch(() => Promise.resolve('')),
+    fetch(`${ROOM_API_BASE_URL}/GetValue/${room}/1`)
+      .then((r) => r.json())
+      .catch(() => Promise.resolve('')),
+  ])
+  const payload = response.map((v) => parseVersionState(v))
+  if ((payload[0]?.version ?? 0) < (payload[1]?.version ?? 0)) {
+    return payload[1]
+  } else {
+    return payload[0]
   }
-  return [null, null]
+}
+
+export function parseVersionState(str: string): VersionState | null {
+  const result = /^(\d+)_(.+)$/.exec(str)
+  if (!result) {
+    return null
+  }
+  return {
+    version: parseInt(result[1]),
+    state: result[2],
+  }
 }
 
 export async function setRemoteState(
   room: string,
   version: number,
+  isHost: boolean,
   gameState: string
 ): Promise<boolean> {
   const payload = await fetch(
-    `${ROOM_API_BASE_URL}/UpdateValue/${room}/g/${encodeURIComponent(
-      version + '_' + gameState
-    )}`,
+    `${ROOM_API_BASE_URL}/UpdateValue/${room}/${
+      isHost ? 0 : 1
+    }/${encodeURIComponent(version + '_' + gameState)}`,
     { method: 'POST' }
   )
-  return !!(await payload.json())
+    .then((r) => r.json())
+    .catch(() => Promise.resolve(false))
+  return !!payload
 }
 
 export function gameStateSubscription(
   room: MutableRefObject<string>,
-  version: MutableRefObject<number>
+  version: MutableRefObject<number>,
+  isHost: MutableRefObject<boolean>
 ) {
-  return async (state: GameStore, prevState?: GameStore): Promise<void> => {
-    if (shallow(state, prevState)) {
+  return async (data: string, prevData?: string): Promise<void> => {
+    debugger
+    if (data === prevData) {
       return
     }
-    if (state.playMode !== PlayMode.ModePvP) {
+    if (!prevData || !/^1_/.test(prevData) || !/^1_/.test(data)) {
       return
     }
-    try {
-      const [remoteVersion] = await getRemoteState(room.current)
-      if (remoteVersion !== null && remoteVersion > version.current) {
-        return
-      }
-      version.current++
-      await setRemoteState(room.current, version.current, state.serialize())
-    } catch (error) {
-      console.error(error)
+    const VersionState = await getRemoteState(room.current)
+    if (VersionState !== null && VersionState.version > version.current) {
+      return
     }
+    version.current++
+    debugger
+    await setRemoteState(room.current, version.current, isHost.current, data)
   }
 }
 
@@ -93,53 +115,47 @@ export function polling(
   version: MutableRefObject<number>
 ) {
   async function internal() {
-    try {
-      if (room && useGameStore.getState().playMode === PlayMode.ModePvP) {
-        const [remoteVersion, remoteGameState] = await getRemoteState(
-          room.current
-        )
-        if (
-          remoteVersion !== null &&
-          remoteVersion > version.current &&
-          remoteGameState !== null &&
-          remoteGameState !== useGameStore.getState().serialize()
-        ) {
-          const unsub = useGameStore.subscribe(
-            (s) => s,
-            () => {
-              version.current = remoteVersion
-              unsub()
-            },
-            { fireImmediately: true }
-          )
-          useGameStore.getState().load(remoteGameState)
-        }
+    if (room.current && useGameStore.getState().playMode === PlayMode.ModePvP) {
+      const versionState = await getRemoteState(room.current)
+      if (
+        versionState !== null &&
+        versionState.version > version.current &&
+        versionState.state !== useGameStore.getState().serialize()
+      ) {
+        version.current = versionState.version
+        // suspenseNextStateChange(true)
+        useGameStore.getState().load(versionState.state)
       }
-    } catch (error) {
-      console.error(error)
     }
-    setTimeout(() => internal(), 100)
+    setTimeout(() => internal(), 300)
   }
   return internal
 }
 
-export function useRoom(
-  initial?: string
-): [MutableRefObject<string>, MutableRefObject<number>] {
+export function useRoom(initial?: string): {
+  room: MutableRefObject<string>
+  version: MutableRefObject<number>
+  isHost: MutableRefObject<boolean>
+} {
   const room = useRef('')
   const version = useRef(0)
+  const isHost = useRef(true)
   useEffect(() => {
     // subscibe to local state change, and push state to server
-    useGameStore.subscribe(gameStateSubscription(room, version))
+    useGameStore.subscribe(
+      (state) => state.serialize(),
+      gameStateSubscription(room, version, isHost)
+    )
 
     // initialization, run once
     const roomInHash = initial ?? getParams().get('r')
     if (roomInHash) {
+      isHost.current = false
       room.current = roomInHash
       setTimeout(polling(room, version), 0)
     } else {
-      setTimeout(loadNewRoom(room, version), 0)
+      setTimeout(createNewRoom(room, version), 0)
     }
   }, [])
-  return [room, version]
+  return { room, version, isHost }
 }

@@ -1,5 +1,4 @@
 import create from 'zustand'
-import shallow from 'zustand/shallow'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { VICTORY_PATTERNS, TIE_PATTERN } from '../constants'
 
@@ -44,7 +43,6 @@ export const useGameStore = create(
     p2Moves: 0b0,
     pvcRecords: [0, 0, 0],
     pvpRecords: [0, 0, 0],
-    room: '',
     cells: () =>
       Array(9)
         .fill(0)
@@ -233,13 +231,15 @@ export const useGameStore = create(
   }))
 )
 
-useGameStore.subscribe((state) => {
-  const data = state.serialize()
-  localStorage.setItem('gameState', data)
-  const params = getParams()
-  params.set('s', data)
-  location.hash = '#' + params.toString()
-})
+useGameStore.subscribe(
+  (state) => state.serialize(),
+  (data) => {
+    localStorage.setItem('gameState', data)
+    const params = getParams()
+    params.set('s', data)
+    location.hash = '#' + params.toString()
+  }
+)
 
 export function getParams() {
   return new URLSearchParams(location.hash.replace(/^#/, ''))

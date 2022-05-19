@@ -3,7 +3,7 @@ import { PlayMode, useGameStore } from './useGameStore'
 import {
   gameStateSubscription,
   getRemoteState,
-  loadNewRoom,
+  createNewRoom,
   polling,
   setRemoteState,
   useRoom,
@@ -15,197 +15,212 @@ const initialState = useGameStore.getState().serialize()
 beforeEach(() => {
   jest.useFakeTimers()
   jest.spyOn(global, 'setTimeout')
-  jest.spyOn(global.console, 'error').mockImplementation(() => {})
 })
 afterEach(() => {
-  fetchMock.mockReset()
   act(() => useGameStore.getState().load(initialState))
-  jest.mocked(global.console.error).mockRestore()
   jest.mocked(global.setTimeout).mockRestore()
   jest.useRealTimers()
 })
 
 describe('useRoom("room-id")', () => {
-  const { result: gameState } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom('room-id'))
+  beforeEach(() => (room.current.version.current = 0))
   test('try load an room "room-id"', () => {
-    gameState.current.setPlayMode(PlayMode.ModePvP)
-    expect(room.current[0].current).toBe('room-id')
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    expect(room.current.room.current).toBe('room-id')
   })
 })
 
-describe('loadNewRoom()', () => {
+describe('createNewRoom()', () => {
+  const { result: gameStore } = renderHook(() => useGameStore())
   renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom())
-  test('loadNewRoom success', async () => {
-    fetchMock.mockResponse(() => Promise.reject())
-    await act(async () => await loadNewRoom(room.current[0], room.current[1])())
-    expect(room.current[0].current).toBe('')
+  beforeEach(() => (room.current.version.current = 0))
+  test('createNewRoom fail', async () => {
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async () => {
+      throw 'createNewRoom fail error'
+    })
+    await act(createNewRoom(room.current.room, room.current.version))
+    expect(room.current.room.current).toBe('')
   })
-  test('loadNewRoom fail', async () => {
-    fetchMock.mockResponse((req) =>
-      /\/GetAppKey$/.test(req.url)
-        ? Promise.resolve(JSON.stringify('room-id'))
-        : /\/UpdateValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('true'))
-        : Promise.reject('unknown ' + req.url)
-    )
-    await act(async () => await loadNewRoom(room.current[0], room.current[1])())
-    expect(room.current[0].current).toBe('room-id')
+  test('createNewRoom success', async () => {
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/UpdateValue\//.test(req.url)) return JSON.stringify('true')
+      throw 'unknown ' + req.url
+    })
+    await act(createNewRoom(room.current.room, room.current.version))
+    expect(room.current.room.current).toBe('room-id')
   })
 })
 
 describe('getRemoteState()', () => {
-  renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom('room-id'))
+  beforeEach(() => (room.current.version.current = 0))
   test('getRemoteState success', async () => {
-    fetchMock.mockResponse((req) =>
-      /\/GetAppKey$/.test(req.url)
-        ? Promise.resolve(JSON.stringify('room-id'))
-        : /\/GetValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('2_1_0_0_0_0_0_0_0_0'))
-        : Promise.reject('unknown ' + req.url)
-    )
-    const [version, state] = await getRemoteState('room-id')
-    expect(version).toBe(2)
-    expect(state).toBe('1_0_0_0_0_0_0_0_0')
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/GetValue\//.test(req.url))
+        return JSON.stringify('2_1_1_0_0_0_0_0_0_0')
+      throw 'unknown ' + req.url
+    })
+    const stateValue = await getRemoteState('room-id')
+    expect(stateValue?.version).toBe(2)
+    expect(stateValue?.state).toBe('1_1_0_0_0_0_0_0_0')
+  })
+  test('getRemoteState success alt', async () => {
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/GetValue\//.test(req.url))
+        if (/0$/.test(req.url)) return JSON.stringify('8_1_1_0_0_0_0_0_0_0')
+        else return JSON.stringify('8_1_1_0_0_0_0_0_0_0')
+      throw 'unknown ' + req.url
+    })
+    const stateValue = await getRemoteState('room-id')
+    expect(stateValue?.version).toBe(8)
+    expect(stateValue?.state).toBe('1_1_0_0_0_0_0_0_0')
   })
   test('getRemoteState fail', async () => {
-    fetchMock.mockResponse((req) =>
-      /\/GetAppKey$/.test(req.url)
-        ? Promise.resolve(JSON.stringify('room-id'))
-        : /\/GetValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('INVALID'))
-        : Promise.reject('unknown ' + req.url)
-    )
-    const [version, state] = await getRemoteState('room-id')
-    expect(version).toBe(null)
-    expect(state).toBe(null)
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/GetValue\//.test(req.url)) return JSON.stringify('INVALID')
+      throw 'unknown ' + req.url
+    })
+    const stateValue = await getRemoteState('room-id')
+    expect(stateValue?.version ?? null).toBe(null)
+    expect(stateValue?.state ?? null).toBe(null)
   })
 })
 
 describe('setRemoteState()', () => {
-  renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom('room-id'))
+  beforeEach(() => (room.current.version.current = 0))
   test('setRemoteState success', async () => {
-    fetchMock.mockResponse((req) =>
-      /\/UpdateValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify(true))
-        : Promise.reject('unknown ' + req.url)
-    )
-    const result = await setRemoteState('room-id', 1, '1_0_0_0_0_0_0_0_0')
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/UpdateValue\//.test(req.url)) return JSON.stringify(true)
+      throw 'unknown ' + req.url
+    })
+    const result = await setRemoteState('room-id', 1, true, '1_0_0_0_0_0_0_0_0')
     expect(result).toBe(true)
   })
   test('setRemoteState fail', async () => {
-    fetchMock.mockResponse((req) =>
-      /\/UpdateValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify(false))
-        : Promise.reject('unknown ' + req.url)
-    )
-    const result = await setRemoteState('room-id', 1, '1_0_0_0_0_0_0_0_0')
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/UpdateValue\//.test(req.url)) return JSON.stringify(false)
+      throw 'unknown ' + req.url
+    })
+    const result = await setRemoteState('room-id', 1, true, '1_0_0_0_0_0_0_0_0')
     expect(result).toBe(false)
   })
 })
 
 describe('gameStateSubscription()', () => {
-  const { result: gameState } = renderHook(() => useGameStore())
+  const { result: gameStore } = renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom('room-id'))
+  beforeEach(() => (room.current.version.current = 0))
   test('not PvP', async () => {
-    room.current[1].current = 0
-    fetchMock.mockResponse(() => Promise.reject())
+    fetchMock.mockResponse(async () => {
+      throw 'gameStateSubscription'
+    })
     await act(
       async () =>
         await gameStateSubscription(
-          room.current[0],
-          room.current[1]
-        )(gameState.current)
+          room.current.room,
+          room.current.version,
+          room.current.isHost
+        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
     )
-    expect(room.current[1].current).toBe(0)
+    expect(room.current.version.current).toBe(0)
   })
   test('no change', async () => {
-    room.current[1].current = 0
-    gameState.current.setPlayMode(PlayMode.ModePvP)
-    fetchMock.mockResponse((req) =>
-      /\/GetAppKey$/.test(req.url)
-        ? Promise.resolve(JSON.stringify('room-id'))
-        : /\/GetValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('0_1_0_0_0_0_0_0_0_0'))
-        : /\/UpdateValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('true'))
-        : Promise.reject('unknown ' + req.url)
-    )
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/GetValue\//.test(req.url))
+        return JSON.stringify('0_1_0_0_0_0_0_0_0_0')
+      if (/\/UpdateValue\//.test(req.url)) return JSON.stringify('true')
+      throw 'unknown ' + req.url
+    })
     await act(
       async () =>
-        await gameStateSubscription(room.current[0], room.current[1])(
-          gameState.current,
-          gameState.current
-        )
+        await gameStateSubscription(
+          room.current.room,
+          room.current.version,
+          room.current.isHost
+        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
     )
-    expect(room.current[1].current).toBe(0)
+    expect(room.current.version.current).toBe(0)
   })
   test('remote version <= local', async () => {
-    room.current[1].current = 0
-    gameState.current.setPlayMode(PlayMode.ModePvP)
-    fetchMock.mockResponse((req) =>
-      /\/GetAppKey$/.test(req.url)
-        ? Promise.resolve(JSON.stringify('room-id'))
-        : /\/GetValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('0_1_0_0_0_0_0_0_0_0'))
-        : /\/UpdateValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('true'))
-        : Promise.reject('unknown ' + req.url)
-    )
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    room.current.version.current = 9
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/GetValue\//.test(req.url))
+        return JSON.stringify('0_1_0_0_0_0_0_0_0_0')
+      if (/\/UpdateValue\//.test(req.url)) return JSON.stringify('true')
+      throw 'unknown ' + req.url
+    })
     await act(
       async () =>
         await gameStateSubscription(
-          room.current[0],
-          room.current[1]
-        )(gameState.current)
+          room.current.room,
+          room.current.version,
+          room.current.isHost
+        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
     )
-    expect(room.current[1].current).toBe(1)
+    expect(room.current.version.current).toBe(9)
   })
   test('remote version > local', async () => {
-    room.current[1].current = 0
-    act(() => gameState.current.setPlayMode(PlayMode.ModePvP))
-    fetchMock.mockResponse((req) =>
-      /\/GetAppKey$/.test(req.url)
-        ? Promise.resolve(JSON.stringify('room-id'))
-        : /\/GetValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('2_1_0_0_0_0_0_0_0_0'))
-        : /\/UpdateValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('true'))
-        : Promise.reject('unknown ' + req.url)
-    )
+    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
+      if (/\/GetValue\//.test(req.url))
+        return JSON.stringify('2_1_0_0_0_0_0_0_0_0')
+      if (/\/UpdateValue\//.test(req.url)) return JSON.stringify('true')
+      throw 'unknown ' + req.url
+    })
     await act(
       async () =>
         await gameStateSubscription(
-          room.current[0],
-          room.current[1]
-        )(gameState.current)
+          room.current.room,
+          room.current.version,
+          room.current.isHost
+        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
     )
-    expect(room.current[1].current).toBe(0)
+    expect(room.current.version.current).toBe(0)
   })
 })
 
 describe('polling()', () => {
   const { result: gameStore } = renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom('room-id'))
+  beforeEach(() => (room.current.version.current = 0))
   test('polling success', async () => {
-    room.current[1].current = 0
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
-    fetchMock.mockResponse((req) =>
-      /\/GetValue\//.test(req.url)
-        ? Promise.resolve(JSON.stringify('2_1_0_0_0_0_0_0_0_0'))
-        : Promise.reject('unknown ' + req.url)
-    )
-    await act(async () => await polling(room.current[0], room.current[1])())
-    expect(room.current[1].current).toBe(2)
+    fetchMock.mockResponse(async (req) => {
+      if (/\/GetValue\//.test(req.url))
+        return JSON.stringify('2_1_0_0_0_0_0_0_0_0')
+      throw 'unknown ' + req.url
+    })
+    await act(polling(room.current.room, room.current.version))
+    expect(room.current.version.current).toBe(2)
   })
   test('polling fail', async () => {
-    room.current[1].current = 0
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
-    fetchMock.mockResponse((req) => Promise.reject('unknown ' + req.url))
-    await act(async () => await polling(room.current[0], room.current[1])())
-    expect(room.current[1].current).toBe(0)
+    fetchMock.mockResponse(async () => {
+      throw 'polling fail error'
+    })
+    await act(polling(room.current.room, room.current.version))
+    expect(room.current.version.current).toBe(0)
   })
 })
