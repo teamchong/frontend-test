@@ -1,6 +1,5 @@
-import { debug } from 'console'
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
-import { GameStore, getParams, PlayMode, useGameStore } from './useGameStore'
+import { getParams, PlayMode, useGameStore } from './useGameStore'
 
 export type VersionState = {
   version: number
@@ -93,19 +92,13 @@ export function gameStateSubscription(
   isHost: MutableRefObject<boolean>
 ) {
   return async (data: string, prevData?: string): Promise<void> => {
-    debugger
     if (data === prevData) {
       return
     }
     if (!prevData || !/^1_/.test(prevData) || !/^1_/.test(data)) {
       return
     }
-    const VersionState = await getRemoteState(room.current)
-    if (VersionState !== null && VersionState.version > version.current) {
-      return
-    }
     version.current++
-    debugger
     await setRemoteState(room.current, version.current, isHost.current, data)
   }
 }
@@ -123,8 +116,8 @@ export function polling(
         versionState.version > version.current &&
         versionState.state !== useGameStore.getState().serialize()
       ) {
-        version.current = versionState.version
         useGameStore.getState().load(versionState.state)
+        version.current = versionState.version
       }
     }
     setTimeout(() => internal(), 300)
@@ -144,7 +137,8 @@ export function useRoom(initial?: string): {
     // subscibe to local state change, and push state to server
     useGameStore.subscribe(
       (state) => state.serialize(),
-      gameStateSubscription(room, version, isHost)
+      gameStateSubscription(room, version, isHost),
+      { fireImmediately: true }
     )
 
     // initialization, run once

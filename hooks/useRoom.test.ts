@@ -198,7 +198,7 @@ describe('gameStateSubscription()', () => {
           room.current.isHost
         )(gameStore.current.serialize(), '1_1_0_0_0_0_0_0_0_0')
     )
-    expect(room.current.version.current).toBe(0)
+    expect(room.current.version.current).toBe(1)
   })
 })
 
