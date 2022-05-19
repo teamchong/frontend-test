@@ -42,7 +42,13 @@ describe('createNewRoom()', () => {
     fetchMock.mockResponse(async () => {
       throw 'createNewRoom fail error'
     })
-    await act(createNewRoom(room.current.room, room.current.version))
+    await act(
+      createNewRoom(
+        room.current.room,
+        room.current.version,
+        room.current.isExited
+      )
+    )
     expect(room.current.room.current).toBe('')
   })
   test('createNewRoom success', async () => {
@@ -52,7 +58,13 @@ describe('createNewRoom()', () => {
       if (/\/UpdateValue\//.test(req.url)) return JSON.stringify('true')
       throw 'unknown ' + req.url
     })
-    await act(createNewRoom(room.current.room, room.current.version))
+    await act(
+      createNewRoom(
+        room.current.room,
+        room.current.version,
+        room.current.isExited
+      )
+    )
     expect(room.current.room.current).toBe('room-id')
   })
 })
@@ -213,7 +225,9 @@ describe('polling()', () => {
         return JSON.stringify('2_1_0_0_0_0_0_0_0_0')
       throw 'unknown ' + req.url
     })
-    await act(polling(room.current.room, room.current.version))
+    await act(
+      polling(room.current.room, room.current.version, room.current.isExited)
+    )
     expect(room.current.version.current).toBe(2)
   })
   test('polling fail', async () => {
@@ -221,7 +235,9 @@ describe('polling()', () => {
     fetchMock.mockResponse(async () => {
       throw 'polling fail error'
     })
-    await act(polling(room.current.room, room.current.version))
+    await act(
+      polling(room.current.room, room.current.version, room.current.isExited)
+    )
     expect(room.current.version.current).toBe(0)
   })
 })

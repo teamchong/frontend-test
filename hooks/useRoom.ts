@@ -18,7 +18,8 @@ export async function createRoom(): Promise<string> {
 // create a new room and initialize state
 export function createNewRoom(
   room: MutableRefObject<string>,
-  version: MutableRefObject<number>
+  version: MutableRefObject<number>,
+  isExited: MutableRefObject<boolean>
 ) {
   return async function () {
     const newRoom = await createRoom()
@@ -35,7 +36,7 @@ export function createNewRoom(
       params.set('r', newRoom)
       location.hash = '#' + params.toString()
     }
-    setTimeout(polling(room, version), 300)
+    setTimeout(polling(room, version, isExited), 300)
   }
 }
 
@@ -106,9 +107,11 @@ export function gameStateSubscription(
 // retrieve latest state from server, override if version is the same or higher
 export function polling(
   room: MutableRefObject<string>,
-  version: MutableRefObject<number>
+  version: MutableRefObject<number>,
+  isExited: MutableRefObject<boolean>
 ) {
   async function internal() {
+    if (isExited.current) return
     if (room.current && useGameStore.getState().playMode === PlayMode.ModePvP) {
       const versionState = await getRemoteState(room.current)
       if (
@@ -129,11 +132,14 @@ export function useRoom(initial?: string): {
   room: MutableRefObject<string>
   version: MutableRefObject<number>
   isHost: MutableRefObject<boolean>
+  isExited: MutableRefObject<boolean>
 } {
   const room = useRef('')
   const version = useRef(0)
   const isHost = useRef(true)
+  const isExited = useRef(false)
   useEffect(() => {
+    const timers: NodeJS.Timeout[] = []
     // subscibe to local state change, and push state to server
     useGameStore.subscribe(
       (state) => state.serialize(),
@@ -146,10 +152,11 @@ export function useRoom(initial?: string): {
     if (roomInHash) {
       isHost.current = roomInHash === localStorage.getItem('roomHosted')
       room.current = roomInHash
-      setTimeout(polling(room, version), 0)
+      setTimeout(polling(room, version, isExited), 0)
     } else {
-      setTimeout(createNewRoom(room, version), 0)
+      setTimeout(createNewRoom(room, version, isExited), 0)
     }
-  }, [])
-  return { room, version, isHost }
+    return () => void (isExited.current = true)
+  }, [initial])
+  return { room, version, isHost, isExited }
 }
