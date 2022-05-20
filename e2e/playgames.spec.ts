@@ -54,6 +54,9 @@ test('play some games', async ({ page }) => {
     page.locator('footer > div.w-20.h-20:has-text("Player 2 (O)") >> nth=-1')
   ).toContainText(/[^\d]5\s*$/)
 
+  // next game
+  await page.locator('#board > .fixed.inset-0 >> nth=-1').click()
+
   // switch to PvC mode
   await page.locator('nav > button:has-text("PvC") >> nth=-1').click()
 
@@ -148,7 +151,9 @@ test('play some games', async ({ page }) => {
   await expect(
     page.locator('footer > div.w-20.h-20:has-text("Player 1 (X)") >> nth=-1')
   ).toContainText(/[^\d]1\s*$/)
-  await page.locator('#board > button.text-7xl >> nth=0').click() // next game
+
+  // next game
+  await page.locator('#board > .fixed.inset-0 >> nth=-1').click()
 
   // p2 win
   await page.locator('#board > button.text-7xl >> nth=8').click() // P1
@@ -160,7 +165,9 @@ test('play some games', async ({ page }) => {
   await expect(
     page.locator('footer > div.w-20.h-20:has-text("Player 2 (O)") >> nth=-1')
   ).toContainText(/[^\d]1\s*$/)
-  await page.locator('button.text-7xl >> nth=0').click() // next game
+
+  // next game
+  await page.locator('#board > .fixed.inset-0 >> nth=-1').click()
 
   // tie
   await page.locator('#board > button.text-7xl >> nth=0').click() // P1
@@ -175,6 +182,9 @@ test('play some games', async ({ page }) => {
   await expect(
     page.locator('footer > div.w-20.h-20:has-text("Tie") >> nth=-1')
   ).toContainText(/[^\d]1\s*$/)
+
+  // next game
+  await page.locator('#board > .fixed.inset-0 >> nth=-1').click()
 
   // switch to PvC mode
   await page.locator('nav > button:has-text("PvC") >> nth=-1').click()

@@ -49,7 +49,7 @@ export const Board: FC = () => {
     >
       {status !== GameStatus.InProgress && (
         <div
-          className="fixed inset-0 z-50 cursor-pointer"
+          className="fixed inset-0 z-40 cursor-pointer"
           onClick={() => move(0b000000000)}
         ></div>
       )}
