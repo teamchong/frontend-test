@@ -36,15 +36,7 @@ export const GamePanel: FC = () => {
   const p2Name = playMode === PlayMode.ModePvC ? 'Computer' : 'Player 2'
 
   return (
-    <footer className="relative flex text-xs sm:text-sm justify-center w-72 sm:w-96 pt-8">
-      <div
-        className="absolute top-0 w-72 sm:w-96 text-center text-nowrap text-blue-700"
-        style={{ textShadow: '1px 1px #ccc' }}
-      >
-        {status !== GameStatus.InProgress && (
-          <>( click any cell to continue )</>
-        )}
-      </div>
+    <footer className="relative flex text-xs sm:text-sm justify-center w-72 sm:w-96 pt-4">
       <div
         className={classNames(
           'flex text-xs sm:text-sm w-20 h-20 sm:w-28 sm:h-28 text-center place-items-center place-content-center text-red-700 border-dashed rounded-full',

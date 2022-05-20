@@ -1,19 +1,35 @@
 import classNames from 'classnames'
 import React, { FC } from 'react'
-import { GameStore, PlayMode, useGameStore } from '../hooks/useGameStore'
+import {
+  GameStatus,
+  GameStore,
+  PlayMode,
+  useGameStore,
+} from '../hooks/useGameStore'
 
 const selector = (state: GameStore) => ({
   playMode: state.playMode,
+  p1Moves: state.p1Moves,
+  p2Moves: state.p2Moves,
+  gameStatus: state.gameStatus,
   setPlayMode: state.setPlayMode,
 })
 
 export const MenuBar: FC = () => {
-  const { playMode, setPlayMode } = useGameStore(selector)
+  const { playMode, p1Moves, p2Moves, setPlayMode, gameStatus } =
+    useGameStore(selector)
+  const status = gameStatus(p1Moves, p2Moves)
   return (
     <nav
-      className="inline-flex rounded-md w-72 sm:w-96 shadow-sm mb-5 justify-center"
+      className="relative inline-flex rounded-md w-72 sm:w-96 shadow-sm mb-5 justify-center pb-3"
       role="group"
     >
+      <div
+        className="absolute top-10 w-72 sm:w-96 text-center text-nowrap text-blue-700"
+        style={{ textShadow: '1px 1px #ccc' }}
+      >
+        {status !== GameStatus.InProgress && <>( click to continue )</>}
+      </div>
       <button
         type="button"
         className={classNames(

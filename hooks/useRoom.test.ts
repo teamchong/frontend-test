@@ -30,9 +30,6 @@ describe('useRoom("room-id")', () => {
     act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
     expect(room.current.room.current).toBe('room-id')
   })
-  test('unload room', () => {
-    act(() => void (room.current.isExited.current = true))
-  })
 })
 
 describe('createNewRoom()', () => {
@@ -238,6 +235,13 @@ describe('polling()', () => {
     fetchMock.mockResponse(async () => {
       throw 'polling fail error'
     })
+    await act(
+      polling(room.current.room, room.current.version, room.current.isExited)
+    )
+    expect(room.current.version.current).toBe(0)
+  })
+  test('polling isExited', async () => {
+    act(() => void (room.current.isExited.current = true))
     await act(
       polling(room.current.room, room.current.version, room.current.isExited)
     )

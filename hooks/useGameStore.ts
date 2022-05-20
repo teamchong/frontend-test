@@ -89,7 +89,7 @@ export const useGameStore = create(
             // ignore if cell is occupied or invalid move
             return {}
           } else {
-            // move and opponent turn
+            // move and then wait for opponent
             const next: Partial<GameStore> = {
               playerNo: (playerNo + 1) % 2,
               p1Moves: playerNo === 0 ? p1Moves | position : p1Moves,

@@ -114,12 +114,10 @@ export function polling(
     if (isExited.current) return
     if (room.current && useGameStore.getState().playMode === PlayMode.ModePvP) {
       const versionState = await getRemoteState(room.current)
-      if (
-        versionState !== null &&
-        versionState.version > version.current &&
-        versionState.state !== useGameStore.getState().serialize()
-      ) {
-        useGameStore.getState().load(versionState.state)
+      if (versionState !== null && versionState.version > version.current) {
+        if (versionState.state !== useGameStore.getState().serialize()) {
+          useGameStore.getState().load(versionState.state)
+        }
         version.current = versionState.version
       }
     }
@@ -152,7 +150,7 @@ export function useRoom(initial?: string): {
     if (roomInHash) {
       isHost.current = roomInHash === localStorage.getItem('roomHosted')
       room.current = roomInHash
-      setTimeout(polling(room, version, isExited), 0)
+      setTimeout(polling(room, version, isExited), 300)
     } else {
       setTimeout(createNewRoom(room, version, isExited), 0)
     }

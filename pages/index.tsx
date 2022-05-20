@@ -35,7 +35,6 @@ const Home: NextPage = () => {
         </button>
         <MenuBar />
         <Board />
-
         <GamePanel />
       </main>
     </div>

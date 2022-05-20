@@ -14,13 +14,22 @@ const selector = (state: GameStore) => ({
   p1Moves: state.p1Moves,
   p2Moves: state.p2Moves,
   cells: state.cells,
+  move: state.move,
   aiMove: state.aiMove,
   gameStatus: state.gameStatus,
 })
 
 export const Board: FC = () => {
-  const { playMode, playerNo, p1Moves, p2Moves, cells, aiMove, gameStatus } =
-    useGameStore(selector)
+  const {
+    playMode,
+    playerNo,
+    p1Moves,
+    p2Moves,
+    cells,
+    move,
+    aiMove,
+    gameStatus,
+  } = useGameStore(selector)
 
   useEffect(() => {
     if (
@@ -30,13 +39,20 @@ export const Board: FC = () => {
       setTimeout(() => aiMove(), 300)
   }, [playMode, playerNo, aiMove])
 
-  const blink = { blink: gameStatus(p1Moves, p2Moves) === GameStatus.Tie }
+  const status = gameStatus(p1Moves, p2Moves)
+  const blink = { blink: status === GameStatus.Tie }
 
   return (
     <div
       id="board"
       className="relative flex flex-wrap w-72 h-72 sm:w-96 sm:h-96 justify-center"
     >
+      {status !== GameStatus.InProgress && (
+        <div
+          className="fixed inset-0 z-50 cursor-pointer"
+          onClick={() => move(0b000000000)}
+        ></div>
+      )}
       <div
         className={classNames(
           'absolute w-72 sm:w-96 border-8 border-black rounded-full',

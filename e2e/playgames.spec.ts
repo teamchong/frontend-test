@@ -42,9 +42,7 @@ test('play some games', async ({ page }) => {
     /\btext-green-700\b/
   )
   await expect(
-    page.locator(
-      'footer > div:has-text("click any cell to continue") >> nth--1'
-    )
+    page.locator('footer > div:has-text("click to continue") >> nth--1')
   ).toBeDefined()
   await expect(
     page.locator('footer > div.w-20.h-20:has-text("Player 1 (X)") >> nth=-1')
