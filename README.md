@@ -1,5 +1,5 @@
-[![Release to GitHub Pages](https://github.com/teamchong/frontend-test/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/teamchong/frontend-test/actions/workflows/release.yml)
-[![Coverage Status](https://coveralls.io/repos/github/teamchong/frontend-test/badge.svg?branch=main)](https://coveralls.io/github/teamchong/frontend-test?branch=main)
+[![Release to GitHub Pages][workflow-badge]][workflow-url]
+[![Coverage Status][coverage-badge]][coverage-url]
 
 # Tic-Tac-Toe
 
@@ -40,3 +40,8 @@ This repository contains web based interactive Tic-Tac-Toe game.
 ## Author
 
 [Steven Chong](https://github.com/teamchong)
+
+[workflow-badge]: https://github.com/teamchong/frontend-test/actions/workflows/release.yml/badge.svg?branch=main
+[workflow-url]: https://github.com/teamchong/frontend-test/actions/workflows/release.yml
+[coverage-badge]: https://coveralls.io/repos/github/teamchong/frontend-test/badge.svg?branch=main
+[coverage-url]: https://coveralls.io/github/teamchong/frontend-test?branch=main
