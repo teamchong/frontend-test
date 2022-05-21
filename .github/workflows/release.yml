@@ -6,10 +6,8 @@ on:
       - main
 
 jobs:
-  CICD:
-    name: Release to GitHub Pages
+  build:
     runs-on: ubuntu-20.04
-
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js v16.14.0
@@ -36,9 +34,52 @@ jobs:
 
       - name: Build NextJS
         run: |
-          yarn next telemetry disable > /dev/null
           NEXT_BASE_PATH=/$(basename ${{ github.repository }}) yarn build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
+      - uses: actions/cache@v3
+        if: ${{needs.build.outputs.docsChange != 'docs only change'}}
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}
+
+      - uses: actions/cache@v3
+        id: cache-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}-${{ github.run_number }}
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}-${{ github.run_number }}
+      - run: yarn lint
+
+
+  testUnit:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}-${{ github.run_number }}
       - name: Unit testing & check code coverage
         run: |
           yarn coverage
@@ -51,6 +92,19 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  testE2E:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}-${{ github.run_number }}
       - name: Cache playwright binaries
         uses: actions/cache@v3
         id: playwright-cache
@@ -69,6 +123,19 @@ jobs:
           name: playwright-report
           path: ${{ github.workspace }}/test-results/**/*
 
+  publishRelease:
+    runs-on: ubuntu-latest
+    needs: [build, lint, testUnit, testE2E]
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}-${{ github.run_number }}
       - name: Release to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
