@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-source ~/.bashrc # To fix yarn command not found
+PATH="$HOME/.yarn/bin:$PATH" # Fix yarn command not found
 yarn lint-staged
