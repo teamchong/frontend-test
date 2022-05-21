@@ -39,7 +39,6 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
 
       - uses: actions/cache@v3
-        if: ${{needs.build.outputs.docsChange != 'docs only change'}}
         id: restore-build
         with:
           path: ./*
@@ -127,10 +126,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, lint, testUnit, testE2E]
     steps:
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
       - uses: actions/cache@v3
         id: restore-build
         with:
