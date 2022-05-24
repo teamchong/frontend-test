@@ -1,6 +1,6 @@
 import { MutableRefObject, useEffect, useRef } from 'react'
 import { PlayMode } from '../types'
-import { load } from '../utils/load'
+import { load } from '../utils/actions'
 import { serializeStore } from '../utils/serializeStore'
 import { useGameStore } from './useGameStore'
 

@@ -8,7 +8,7 @@ import { MenuBar } from '../components/MenuBar'
 import { useGameStore } from '../hooks/useGameStore'
 import { useRoom } from '../hooks/useRoom'
 import { GameStore } from '../types'
-import { load } from '../utils/load'
+import { load } from '../utils/actions'
 
 const selector = (state: GameStore) => ({
   dispatch: state.dispatch,

@@ -8,7 +8,7 @@ import fetchMock from 'jest-fetch-mock'
 import { act } from '@testing-library/react-hooks/pure'
 import { serializeStore } from './utils/serializeStore'
 import { useGameStore } from './hooks/useGameStore'
-import { load } from './utils/load'
+import { load } from './utils/actions'
 
 fetchMock.enableMocks()
 const initialState = serializeStore(useGameStore.getState())

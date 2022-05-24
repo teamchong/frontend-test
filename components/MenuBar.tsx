@@ -3,7 +3,7 @@ import React, { FC } from 'react'
 import { useGameStore } from '../hooks/useGameStore'
 import { GameStatus, PlayMode, GameStore } from '../types'
 import { gameStatus } from '../utils/gameStatus'
-import { setPlayMode } from '../utils/setPlayMode'
+import { setPlayMode } from '../utils/actions'
 
 const selector = (state: GameStore) => ({
   playMode: state.playMode,

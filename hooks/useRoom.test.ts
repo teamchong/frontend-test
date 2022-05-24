@@ -11,7 +11,7 @@ import fetchMock from 'jest-fetch-mock'
 import { PlayMode } from '../types'
 import { serializeStore } from '../utils/serializeStore'
 import { useGameStore } from './useGameStore'
-import { setPlayMode } from '../utils/setPlayMode'
+import { setPlayMode } from '../utils/actions'
 
 describe('useRoom("room-id")', () => {
   const { result: gameStore } = renderHook(() => useGameStore())
