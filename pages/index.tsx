@@ -9,6 +9,7 @@ import { useGameStore } from '../hooks/useGameStore'
 import { useRoom } from '../hooks/useRoom'
 import { GameStore } from '../types'
 import { load } from '../utils/actions'
+import { useEffect } from 'react'
 
 const selector = (state: GameStore) => ({
   dispatch: state.dispatch,
@@ -16,6 +17,12 @@ const selector = (state: GameStore) => ({
 
 const Home: NextPage = () => {
   const { dispatch } = useGameStore(selector)
+  useEffect(() => {
+    const s = new URLSearchParams(location.hash.replace(/^#/, '')).get('s')
+    if (!!s) {
+      load(dispatch, s)
+    }
+  }, [])
   useRoom()
   return (
     <div className={styles.container}>

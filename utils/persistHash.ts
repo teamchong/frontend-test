@@ -29,18 +29,7 @@ export const persistHash: PersistHash = (config) => {
       params.set('s', serializeStore(get!()))
       location.hash = '#' + params.toString()
     }
-    const configResult = config(setState, get, api, $$storeMutations)
-
-    let stateFromHash: Partial<GameStore> = {}
-    try {
-      const s = new URLSearchParams(location.hash.replace(/^#/, '')).get('s')
-      if (!!s) {
-        stateFromHash = deserializeStore(s)
-      }
-    } catch (error) {
-      // prevent error if the location is not defined (e.g. when server side rendering a page)
-    }
-    return { ...configResult, ...stateFromHash }
+    return config(setState, get, api, $$storeMutations)
   }
   return output
 }

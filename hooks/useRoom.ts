@@ -37,6 +37,7 @@ export function createNewRoom(
       room.current = newRoom
       const params = new URLSearchParams(location.hash.replace(/^#/, ''))
       params.set('r', newRoom)
+      console.log({ hash: location.hash.replace(/^#/, ''), params })
       location.hash = '#' + params.toString()
     }
     setTimeout(polling(room, version, isExited), 300)

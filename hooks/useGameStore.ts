@@ -24,21 +24,17 @@ const initialState: StateCreator<
     dispatch,
   }
 }
-const persisted = persist(
-  initialState as unknown as StateCreator<
-    GameStore,
-    [[StoreMutatorIdentifier, unknown]]
-  >,
-  {
-    name: 'gameState',
-    serialize: (state) => serializeStore(state.state),
-    deserialize: (str) => ({ state: deserializeStore(str) }),
-  }
-)
 const persistedWithSelector = subscribeWithSelector(
-  persistHash(persisted) as unknown as StateCreator<
-    GameStore,
-    [[StoreMutatorIdentifier, unknown]]
-  >
+  persist(
+    persistHash(initialState) as unknown as StateCreator<
+      GameStore,
+      [[StoreMutatorIdentifier, unknown]]
+    >,
+    {
+      name: 'gameState',
+      serialize: (state) => serializeStore(state.state),
+      deserialize: (str) => ({ state: deserializeStore(str) }),
+    }
+  ) as unknown as StateCreator<GameStore, [[StoreMutatorIdentifier, unknown]]>
 )
 export const useGameStore = create(persistedWithSelector)
