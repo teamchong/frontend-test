@@ -3,7 +3,6 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { Actions, GameStore, PlayMode } from '../types'
 import { reducer } from '../utils/reducer'
 import { persist } from 'zustand/middleware'
-import { persistHash } from '../utils/persistHash'
 import { serializeStore } from '../utils/serializeStore'
 import { deserializeStore } from '../utils/deserializeStore'
 
@@ -24,17 +23,4 @@ const initialState: StateCreator<
     dispatch,
   }
 }
-const persistedWithSelector = subscribeWithSelector(
-  persist(
-    persistHash(initialState) as unknown as StateCreator<
-      GameStore,
-      [[StoreMutatorIdentifier, unknown]]
-    >,
-    {
-      name: 'gameState',
-      serialize: (state) => serializeStore(state.state),
-      deserialize: (str) => ({ state: deserializeStore(str) }),
-    }
-  ) as unknown as StateCreator<GameStore, [[StoreMutatorIdentifier, unknown]]>
-)
-export const useGameStore = create(persistedWithSelector)
+export const useGameStore = create(subscribeWithSelector(initialState))

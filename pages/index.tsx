@@ -10,6 +10,7 @@ import { useRoom } from '../hooks/useRoom'
 import { GameStore } from '../types'
 import { load } from '../utils/actions'
 import { useEffect } from 'react'
+import { serializeStore } from '../utils/serializeStore'
 
 const selector = (state: GameStore) => ({
   dispatch: state.dispatch,
@@ -18,11 +19,28 @@ const selector = (state: GameStore) => ({
 const Home: NextPage = () => {
   const { dispatch } = useGameStore(selector)
   useEffect(() => {
-    const s = new URLSearchParams(location.hash.replace(/^#/, '')).get('s')
-    if (!!s) {
-      load(dispatch, s)
+    const stateFromHash = new URLSearchParams(
+      location.hash.replace(/^#/, '')
+    ).get('s')
+    if (!!stateFromHash) {
+      load(dispatch, stateFromHash)
+    } else {
+      const stateFromLocalStorage = localStorage.getItem('gameState')
+      if (!!stateFromLocalStorage) {
+        load(dispatch, stateFromLocalStorage)
+      }
     }
-  }, [])
+    useGameStore.subscribe(
+      (state) => state,
+      (state) => {
+        const serialized = serializeStore(state)
+        const params = new URLSearchParams(location.hash.replace(/^#/, ''))
+        params.set('s', serialized)
+        location.hash = '#' + params.toString()
+        localStorage.setItem('gameState', serialized)
+      }
+    )
+  }, [dispatch])
   useRoom()
   return (
     <div className={styles.container}>
