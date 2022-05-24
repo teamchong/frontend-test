@@ -7,7 +7,7 @@ import {
 import { useGameStore } from '../hooks/useGameStore'
 import { GameStatus } from '../types'
 import { gameStatus } from './gameStatus'
-import { move } from './move'
+import { move } from './actions'
 
 describe('gameStatus', () => {
   const { result: gameStore } = renderHook(() => useGameStore())

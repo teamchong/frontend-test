@@ -1,7 +1,7 @@
 import { GameStatus, GameStore, PlayMode } from '../types'
 import { cells } from './cells'
 import { gameStatus } from './gameStatus'
-import { move } from './move'
+import { move } from './actions'
 import { victoryPattern } from './victoryPattern'
 
 export function aiMove(

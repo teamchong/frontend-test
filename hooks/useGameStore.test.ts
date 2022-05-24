@@ -5,9 +5,7 @@ import {
   TestTiePatterns,
 } from '../constants'
 import { PlayMode } from '../types'
-import { load } from '../utils/load'
-import { move } from '../utils/move'
-import { setPlayMode } from '../utils/setPlayMode'
+import { move, load, setPlayMode } from '../utils/actions'
 import { useGameStore } from './useGameStore'
 
 describe('playMode', () => {

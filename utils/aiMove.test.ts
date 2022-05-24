@@ -8,7 +8,7 @@ import { useGameStore } from '../hooks/useGameStore'
 import { GameStatus, PlayMode } from '../types'
 import { aiMove } from './aiMove'
 import { gameStatus } from './gameStatus'
-import { move } from './move'
+import { move } from './actions'
 
 describe('aiMove', () => {
   const { result: gameStore } = renderHook(() => useGameStore())

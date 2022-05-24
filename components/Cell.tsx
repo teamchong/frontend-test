@@ -3,7 +3,7 @@ import { useGameStore } from '../hooks/useGameStore'
 import classNames from 'classnames'
 import { PlayMode, GameStore } from '../types'
 import { victoryPattern } from '../utils/victoryPattern'
-import { move } from '../utils/move'
+import { move } from '../utils/actions'
 
 export type CellProps = {
   position: number

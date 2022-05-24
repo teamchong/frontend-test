@@ -5,7 +5,7 @@ import { GameStatus, PlayMode, GameStore } from '../types'
 import { aiMove } from '../utils/aiMove'
 import { cells } from '../utils/cells'
 import { gameStatus } from '../utils/gameStatus'
-import { move } from '../utils/move'
+import { move } from '../utils/actions'
 import { Cell } from './Cell'
 
 const selector = (state: GameStore) => ({
