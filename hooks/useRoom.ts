@@ -1,5 +1,8 @@
 import { MutableRefObject, useEffect, useRef } from 'react'
-import { getParams, PlayMode, useGameStore } from './useGameStore'
+import { PlayMode } from '../types'
+import { load } from '../utils/load'
+import { serializeStore } from '../utils/serializeStore'
+import { useGameStore } from './useGameStore'
 
 export type VersionState = {
   version: number
@@ -27,12 +30,12 @@ export function createNewRoom(
       newRoom,
       version.current,
       true,
-      useGameStore.getState().serialize()
+      serializeStore(useGameStore.getState())
     )
     if (newRoom && isCreated) {
       localStorage.setItem('roomHosted', newRoom)
       room.current = newRoom
-      const params = getParams()
+      const params = new URLSearchParams(location.hash.replace(/^#/, ''))
       params.set('r', newRoom)
       location.hash = '#' + params.toString()
     }
@@ -112,11 +115,12 @@ export function polling(
 ) {
   async function internal() {
     if (isExited.current) return
-    if (room.current && useGameStore.getState().playMode === PlayMode.ModePvP) {
+    const state = useGameStore.getState()
+    if (room.current && state.playMode === PlayMode.ModePvP) {
       const versionState = await getRemoteState(room.current)
       if (versionState !== null && versionState.version > version.current) {
-        if (versionState.state !== useGameStore.getState().serialize()) {
-          useGameStore.getState().load(versionState.state)
+        if (versionState.state !== serializeStore(state)) {
+          load(state.dispatch, versionState.state)
         }
         version.current = versionState.version
       }
@@ -140,13 +144,14 @@ export function useRoom(initial?: string): {
     const timers: NodeJS.Timeout[] = []
     // subscibe to local state change, and push state to server
     useGameStore.subscribe(
-      (state) => state.serialize(),
+      (state) => serializeStore(state),
       gameStateSubscription(room, version, isHost),
       { fireImmediately: true }
     )
 
     // initialization, run once
-    const roomInHash = initial ?? getParams().get('r')
+    const roomInHash =
+      initial ?? new URLSearchParams(location.hash.replace(/^#/, '')).get('r')
     if (roomInHash) {
       isHost.current = roomInHash === localStorage.getItem('roomHosted')
       room.current = roomInHash

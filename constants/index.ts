@@ -37,3 +37,32 @@ export const TIE_PATTERN =
   // |X|X|X|
   // |X|X|X|
   0b111111111
+
+export const TestP1VictoryPatterns = [
+  0b100000000, // 1P
+  0b000000001, // 2P
+  0b010000000, // 1P
+  0b000000010, // 2P
+  0b001000000, // 1P
+]
+
+export const TestP2VictoryPatterns = [
+  0b000000001, // 1P
+  0b100000000, // 2P
+  0b000000010, // 1P
+  0b010000000, // 2P
+  0b000001000, // 1P
+  0b001000000, // 2P
+]
+
+export const TestTiePatterns = [
+  0b100000000, // 1P
+  0b010000000, // 2P
+  0b000100000, // 1P
+  0b000010000, // 2P
+  0b000000010, // 1P
+  0b000000100, // 2P
+  0b001000000, // 1P
+  0b000001000, // 2P
+  0b000000001, // 1P
+]

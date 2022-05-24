@@ -1,11 +1,11 @@
 import classNames from 'classnames'
 import React, { FC, useEffect } from 'react'
-import {
-  GameStatus,
-  GameStore,
-  PlayMode,
-  useGameStore,
-} from '../hooks/useGameStore'
+import { useGameStore } from '../hooks/useGameStore'
+import { GameStatus, PlayMode, GameStore } from '../types'
+import { aiMove } from '../utils/aiMove'
+import { cells } from '../utils/cells'
+import { gameStatus } from '../utils/gameStatus'
+import { move } from '../utils/move'
 import { Cell } from './Cell'
 
 const selector = (state: GameStore) => ({
@@ -13,31 +13,23 @@ const selector = (state: GameStore) => ({
   playerNo: state.playerNo,
   p1Moves: state.p1Moves,
   p2Moves: state.p2Moves,
-  cells: state.cells,
-  move: state.move,
-  aiMove: state.aiMove,
-  gameStatus: state.gameStatus,
+  dispatch: state.dispatch,
 })
 
 export const Board: FC = () => {
-  const {
-    playMode,
-    playerNo,
-    p1Moves,
-    p2Moves,
-    cells,
-    move,
-    aiMove,
-    gameStatus,
-  } = useGameStore(selector)
+  const { playMode, playerNo, p1Moves, p2Moves, dispatch } =
+    useGameStore(selector)
 
   useEffect(() => {
     if (
       (playMode === PlayMode.ModePvC && playerNo === 1) ||
       (playMode === PlayMode.ModeCvP && playerNo === 0)
     )
-      setTimeout(() => aiMove(), 300)
-  }, [playMode, playerNo, aiMove])
+      setTimeout(
+        () => aiMove(playMode, playerNo, p1Moves, p2Moves, dispatch),
+        300
+      )
+  }, [dispatch, p1Moves, p2Moves, playMode, playerNo])
 
   const status = gameStatus(p1Moves, p2Moves)
   const blink = { blink: status === GameStatus.Tie }
@@ -50,7 +42,7 @@ export const Board: FC = () => {
       {status !== GameStatus.InProgress && (
         <div
           className="fixed inset-0 z-40 cursor-pointer"
-          onClick={() => move(0b000000000)}
+          onClick={() => move(dispatch, 0b000000000)}
         ></div>
       )}
       <div

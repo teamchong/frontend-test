@@ -1,6 +1,9 @@
-import React, { FC, useCallback, useEffect } from 'react'
-import { GameStore, PlayMode, useGameStore } from '../hooks/useGameStore'
+import React, { FC, useCallback } from 'react'
+import { useGameStore } from '../hooks/useGameStore'
 import classNames from 'classnames'
+import { PlayMode, GameStore } from '../types'
+import { victoryPattern } from '../utils/victoryPattern'
+import { move } from '../utils/move'
 
 export type CellProps = {
   position: number
@@ -11,19 +14,18 @@ const selector = (state: GameStore) => ({
   playerNo: state.playerNo,
   p1Moves: state.p1Moves,
   p2Moves: state.p2Moves,
-  move: state.move,
-  victoryPattern: state.victoryPattern,
+  dispatch: state.dispatch,
 })
 
 export const Cell: FC<CellProps> = ({ position }) => {
-  const { playMode, playerNo, p1Moves, p2Moves, move, victoryPattern } =
+  const { playMode, playerNo, p1Moves, p2Moves, dispatch } =
     useGameStore(selector)
 
   const victory = victoryPattern(p1Moves) || victoryPattern(p2Moves)
   const handleClick = useCallback(() => {
-    move(position)
+    move(dispatch, position)
     new Audio('./click.mp3').play()
-  }, [move, position])
+  }, [dispatch, position])
 
   return (
     <button

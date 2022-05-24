@@ -1,23 +1,19 @@
 import classNames from 'classnames'
 import React, { FC } from 'react'
-import {
-  GameStatus,
-  GameStore,
-  PlayMode,
-  useGameStore,
-} from '../hooks/useGameStore'
+import { useGameStore } from '../hooks/useGameStore'
+import { GameStatus, PlayMode, GameStore } from '../types'
+import { gameStatus } from '../utils/gameStatus'
+import { setPlayMode } from '../utils/setPlayMode'
 
 const selector = (state: GameStore) => ({
   playMode: state.playMode,
   p1Moves: state.p1Moves,
   p2Moves: state.p2Moves,
-  gameStatus: state.gameStatus,
-  setPlayMode: state.setPlayMode,
+  dispatch: state.dispatch,
 })
 
 export const MenuBar: FC = () => {
-  const { playMode, p1Moves, p2Moves, setPlayMode, gameStatus } =
-    useGameStore(selector)
+  const { playMode, p1Moves, p2Moves, dispatch } = useGameStore(selector)
   const status = gameStatus(p1Moves, p2Moves)
   return (
     <nav
@@ -28,7 +24,7 @@ export const MenuBar: FC = () => {
         className="absolute top-10 w-72 sm:w-96 text-center text-nowrap text-blue-700"
         style={{ textShadow: '1px 1px #ccc' }}
       >
-        {status !== GameStatus.InProgress && <>( click to continue )</>}
+        {status !== GameStatus.InProgress && '( click to continue )'}
       </div>
       <button
         type="button"
@@ -40,7 +36,7 @@ export const MenuBar: FC = () => {
             'text-white bg-blue-700': playMode === PlayMode.ModePvC,
           }
         )}
-        onClick={() => setPlayMode(PlayMode.ModePvC)}
+        onClick={() => setPlayMode(dispatch, PlayMode.ModePvC)}
       >
         <svg
           className="mr-2 w-4 h-4 fill-current inline"
@@ -68,7 +64,7 @@ export const MenuBar: FC = () => {
             'text-white bg-blue-700': playMode === PlayMode.ModePvP,
           }
         )}
-        onClick={() => setPlayMode(PlayMode.ModePvP)}
+        onClick={() => setPlayMode(dispatch, PlayMode.ModePvP)}
       >
         <svg
           className="mr-2 w-4 h-4 fill-current inline"
@@ -96,7 +92,7 @@ export const MenuBar: FC = () => {
             'text-white bg-blue-700': playMode === PlayMode.ModeCvP,
           }
         )}
-        onClick={() => setPlayMode(PlayMode.ModeCvP)}
+        onClick={() => setPlayMode(dispatch, PlayMode.ModeCvP)}
       >
         <svg
           className="mr-2 w-4 h-4 fill-current inline"

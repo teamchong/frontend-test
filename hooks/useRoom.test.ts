@@ -1,5 +1,4 @@
 import { renderHook, act } from '@testing-library/react-hooks/pure'
-import { PlayMode, useGameStore } from './useGameStore'
 import {
   gameStateSubscription,
   getRemoteState,
@@ -9,25 +8,17 @@ import {
   useRoom,
 } from './useRoom'
 import fetchMock from 'jest-fetch-mock'
-
-const initialState = useGameStore.getState().serialize()
-
-beforeEach(() => {
-  jest.useFakeTimers()
-  jest.spyOn(global, 'setTimeout')
-})
-afterEach(() => {
-  act(() => useGameStore.getState().load(initialState))
-  jest.mocked(global.setTimeout).mockRestore()
-  jest.useRealTimers()
-})
+import { PlayMode } from '../types'
+import { serializeStore } from '../utils/serializeStore'
+import { useGameStore } from './useGameStore'
+import { setPlayMode } from '../utils/setPlayMode'
 
 describe('useRoom("room-id")', () => {
   const { result: gameStore } = renderHook(() => useGameStore())
   const { result: room } = renderHook(() => useRoom('room-id'))
   beforeEach(() => (room.current.version.current = 0))
   test('try load an room "room-id"', () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     expect(room.current.room.current).toBe('room-id')
   })
 })
@@ -38,7 +29,7 @@ describe('createNewRoom()', () => {
   const { result: room } = renderHook(() => useRoom())
   beforeEach(() => (room.current.version.current = 0))
   test('createNewRoom fail', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async () => {
       throw 'createNewRoom fail error'
     })
@@ -52,7 +43,7 @@ describe('createNewRoom()', () => {
     expect(room.current.room.current).toBe('')
   })
   test('createNewRoom success', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
       if (/\/UpdateValue\//.test(req.url)) return JSON.stringify('true')
@@ -74,7 +65,7 @@ describe('getRemoteState()', () => {
   const { result: room } = renderHook(() => useRoom('room-id'))
   beforeEach(() => (room.current.version.current = 0))
   test('getRemoteState success', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
       if (/\/GetValue\//.test(req.url))
@@ -86,7 +77,7 @@ describe('getRemoteState()', () => {
     expect(stateValue?.state).toBe('1_1_0_0_0_0_0_0_0')
   })
   test('getRemoteState take version 1', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
       if (/\/GetValue\//.test(req.url)) {
@@ -100,7 +91,7 @@ describe('getRemoteState()', () => {
     expect(stateValue?.state).toBe('1_1_0_0_0_0_0_0_0')
   })
   test('getRemoteState fail', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
       if (/\/GetValue\//.test(req.url)) return JSON.stringify('INVALID')
@@ -117,7 +108,7 @@ describe('setRemoteState()', () => {
   const { result: room } = renderHook(() => useRoom('room-id'))
   beforeEach(() => (room.current.version.current = 0))
   test('setRemoteState success', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/UpdateValue\//.test(req.url)) return JSON.stringify(true)
       throw 'unknown ' + req.url
@@ -126,7 +117,7 @@ describe('setRemoteState()', () => {
     expect(result).toBe(true)
   })
   test('setRemoteState fail', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/UpdateValue\//.test(req.url)) return JSON.stringify(false)
       throw 'unknown ' + req.url
@@ -150,12 +141,12 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '0_0_0_0_0_0_0_0_0_0')
+        )(serializeStore(gameStore.current), '0_0_0_0_0_0_0_0_0_0')
     )
     expect(room.current.version.current).toBe(0)
   })
   test('no change', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
       if (/\/GetValue\//.test(req.url))
@@ -169,12 +160,12 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '1_0_0_0_0_0_0_0_0_0')
+        )(serializeStore(gameStore.current), '1_0_0_0_0_0_0_0_0_0')
     )
     expect(room.current.version.current).toBe(0)
   })
   test('remote version <= local', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     room.current.version.current = 9
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
@@ -189,12 +180,12 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '1_1_0_0_0_0_0_0_0_0')
+        )(serializeStore(gameStore.current), '1_1_0_0_0_0_0_0_0_0')
     )
     expect(room.current.version.current).toBe(10)
   })
   test('remote version > local', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetAppKey$/.test(req.url)) return JSON.stringify('room-id')
       if (/\/GetValue\//.test(req.url))
@@ -208,7 +199,7 @@ describe('gameStateSubscription()', () => {
           room.current.room,
           room.current.version,
           room.current.isHost
-        )(gameStore.current.serialize(), '1_1_0_0_0_0_0_0_0_0')
+        )(serializeStore(gameStore.current), '1_1_0_0_0_0_0_0_0_0')
     )
     expect(room.current.version.current).toBe(1)
   })
@@ -219,7 +210,7 @@ describe('polling()', () => {
   const { result: room } = renderHook(() => useRoom('room-id'))
   beforeEach(() => (room.current.version.current = 0))
   test('polling success', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async (req) => {
       if (/\/GetValue\//.test(req.url))
         return JSON.stringify('2_1_0_0_0_0_0_0_0_0')
@@ -231,7 +222,7 @@ describe('polling()', () => {
     expect(room.current.version.current).toBe(2)
   })
   test('polling fail', async () => {
-    act(() => gameStore.current.setPlayMode(PlayMode.ModePvP))
+    act(() => setPlayMode(gameStore.current.dispatch, PlayMode.ModePvP))
     fetchMock.mockResponse(async () => {
       throw 'polling fail error'
     })

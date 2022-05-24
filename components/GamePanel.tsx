@@ -1,11 +1,8 @@
 import classNames from 'classnames'
 import React, { FC } from 'react'
-import {
-  useGameStore,
-  GameStatus,
-  GameStore,
-  PlayMode,
-} from '../hooks/useGameStore'
+import { useGameStore } from '../hooks/useGameStore'
+import { GameStatus, PlayMode, GameStore } from '../types'
+import { gameStatus } from '../utils/gameStatus'
 
 const selector = (state: GameStore) => ({
   playMode: state.playMode,
@@ -14,19 +11,11 @@ const selector = (state: GameStore) => ({
   pvpRecords: state.pvpRecords,
   p1Moves: state.p1Moves,
   p2Moves: state.p2Moves,
-  gameStatus: state.gameStatus,
 })
 
 export const GamePanel: FC = () => {
-  const {
-    playMode,
-    playerNo,
-    pvcRecords,
-    pvpRecords,
-    p1Moves,
-    p2Moves,
-    gameStatus,
-  } = useGameStore(selector)
+  const { playMode, playerNo, pvcRecords, pvpRecords, p1Moves, p2Moves } =
+    useGameStore(selector)
 
   const status = gameStatus(p1Moves, p2Moves)
   const isTie = status === GameStatus.Tie
