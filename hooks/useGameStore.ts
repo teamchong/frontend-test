@@ -2,9 +2,6 @@ import create, { StateCreator, StoreMutatorIdentifier } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { Actions, GameStore, PlayMode } from '../types'
 import { reducer } from '../utils/reducer'
-import { persist } from 'zustand/middleware'
-import { serializeStore } from '../utils/serializeStore'
-import { deserializeStore } from '../utils/deserializeStore'
 
 const initialState: StateCreator<
   GameStore,
